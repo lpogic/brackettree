@@ -1,0 +1,8 @@
+rootProject.name = 'brackettree'
+
+sourceControl {
+    gitRepository(new URI("https://github.com/lpogic/suite.git")) {
+        producesModule("lpo:suite")
+    }
+}
+

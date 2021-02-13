@@ -1,0 +1,340 @@
+package brackettree.writer;
+
+import brackettree.Interpreted;
+import suite.suite.SolidSubject;
+import suite.suite.Subject;
+import suite.suite.Suite;
+import suite.suite.action.Action;
+import suite.suite.util.Series;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+public class TreeDesigner {
+
+    interface Xray {
+        String toString(BracketTreeWriter writer);
+    }
+
+    static class ObjectXray implements Xray {
+        Object o;
+        int usages;
+        String refId;
+
+        public ObjectXray(Object o) {
+            this.o = o;
+            usages = 0;
+        }
+
+        @Override
+        public boolean equals(Object o1) {
+            if (this == o1) return true;
+            if (o1 == null || getClass() != o1.getClass()) return false;
+            ObjectXray that = (ObjectXray) o1;
+            return o == that.o;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(o);
+        }
+
+        @Override
+        public String toString(BracketTreeWriter writer) {
+            return "@" + refId;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "{" + o + "}";
+        }
+    }
+
+    static class AutoXray implements Xray {
+
+        @Override
+        public String toString(BracketTreeWriter writer) {
+            return "";
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "{}";
+        }
+    }
+
+    static class StringXray implements Xray {
+        String str;
+
+        public StringXray(String str) {
+            this.str = str;
+        }
+
+        @Override
+        public String toString(BracketTreeWriter writer) {
+            return writer.escaped(str);
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "{" + str + "}";
+        }
+    }
+
+    static class SpecialXray implements Xray {
+        String str;
+
+        public SpecialXray(String str) {
+            this.str = str;
+        }
+
+        @Override
+        public String toString(BracketTreeWriter writer) {
+            return str;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "{" + str + "}";
+        }
+    }
+
+    static final Xray hashXray = new SpecialXray("#");
+    static final Xray atXray = new SpecialXray("@");
+    static final Xray slimeXray = new SpecialXray("@/");
+
+    Subject $refs = Suite.set();
+    Subject $decompositions = Suite.set();
+
+    Subject $decomposers = Suite.set();
+    Function<Object, Subject> elementaryDecomposer;
+    boolean attachingTypes;
+    Subject $classAliases = Suite.set();
+
+    public TreeDesigner() {
+        setDecomposers(StandardInterpreter.getAllSupported());
+        $classAliases.alter(Suite.
+                setUp(Integer.class, "int").
+                setUp(int.class, "int").
+                setUp(Double.class, "double").
+                setUp(double.class, "double").
+                setUp(Float.class, "float").
+                setUp(float.class, "float").
+                setUp(List.class, "list").
+                setUp(SolidSubject.class, "subject").
+                setUp(String.class, "string")
+        );
+        elementaryDecomposer = o -> {
+            if(o == null) return Suite.set("null");
+            if(o instanceof String) return Suite.set(o);
+            if(o instanceof Integer) return Suite.set(o.toString());
+            if(o instanceof Double) return Suite.set(o.toString());
+            if(o instanceof Float) return Suite.set(o.toString());
+            if(o instanceof Boolean) return Suite.set(o.toString());
+            return Suite.set();
+        };
+        attachingTypes = true;
+    }
+
+    public boolean isAttachingTypes() {
+        return attachingTypes;
+    }
+
+    public void setAttachingTypes(boolean attachingTypes) {
+        this.attachingTypes = attachingTypes;
+    }
+
+    public void setDecomposition(Object o, Subject $) {
+        $decompositions.set(o, $);
+    }
+
+    public void setDecomposer(Class<?> type, Action decomposer) {
+        $decomposers.up(type).set(decomposer);
+    }
+
+    public<T> void setDecomposer(Class<T> type, BiConsumer<T, TreeDesigner> decomposer) {
+        $decomposers.up(type).set(decomposer);
+    }
+
+    public void setDecomposers(Series $decomposers) {
+        this.$decomposers.alter($decomposers.select(v -> v.is(Class.class) &&
+                (v.up().is(Action.class) || v.up().is(BiConsumer.class))
+        ));
+    }
+
+    public void setElementaryDecomposer(Function<Object, Subject> elementaryDecomposer) {
+        this.elementaryDecomposer = elementaryDecomposer;
+    }
+
+    public void setClassAlias(Class<?> aClass, String alias) {
+        $classAliases.up(aClass).set(alias);
+    }
+
+    public Subject load(Object o) {
+        $refs = Suite.set();
+        var xray = xray(o);
+        var $xRoot = Suite.set(xray);
+        int id = 0;
+        for(var $i : Suite.preDfs(Suite.add($xRoot)).eachUp()) {
+            for(var $i1 : $i) {
+                if($i1.is(ObjectXray.class)) {
+                    ObjectXray x = $i1.asExpected();
+                    if (x.usages < 2 && $i.size() == 1 && $i1.up().absent()) {
+                        $i.unset().alter($refs.up(x).get());
+                    } else {
+                        if (x.refId == null) {
+                            x.refId = "" + id++;
+                            var $r = $refs.up(x).get();
+                            $r.strictSet($r.first().direct(), atXray, Suite.set(new StringXray(x.refId)));
+                            $i.up(slimeXray).set(new AutoXray(), $r);
+                        }
+                    }
+                }
+            }
+        }
+        if(xray instanceof ObjectXray && ((ObjectXray) xray).usages > 1) return $xRoot.at(1);
+        else return $xRoot;
+    }
+
+    Xray xray(Object o) {
+        if(o instanceof Xray) return (Xray) o;
+        var $prim = elementaryDecomposer.apply(o);
+        if($prim.present()) return new StringXray($prim.asExpected());
+        if(o instanceof String) return new StringXray($prim.asExpected());
+        if(o instanceof Suite.Auto) return new AutoXray();
+
+        ObjectXray xray = $refs.getFilled(new ObjectXray(o)).asExpected();
+        if(xray.usages++ < 1) {
+            var $ = decompose(o);
+            $refs.set(xray, $);
+            for(var $i : Suite.preDfs(Suite.add($)).eachUp()) {
+                for(var i : $i.eachDirect()) {
+                    $i.shift(i, xray(i));
+                }
+            }
+        }
+
+        return xray;
+    }
+
+    Subject decompose(Object o) {
+
+        if($decompositions.present(o)) return $decompositions.up(o).get();
+
+        Class<?> type = o.getClass();
+
+        var $decomposer = $decomposers.up(type).get();
+        if($decomposer.present()) {
+            if ($decomposer.is(Action.class)) {
+
+                Action decomposer = $decomposer.asExpected();
+                var $r = decomposer.play(Suite.set(o));
+                if(isAttachingTypes()) attachType($r, type);
+                $decompositions.set(o, $r);
+                return $r;
+            } else if ($decomposer.is(BiConsumer.class)) {
+                BiConsumer<Object, TreeDesigner> consumer = $decomposer.asExpected();
+                consumer.accept(o, this);
+                return $decompositions.up(o).get();
+            }
+        } else if(type.isArray()) {
+            var $r = interpretArray(o);
+            if(isAttachingTypes()) attachType($r, type);
+            $decompositions.set(o, $r);
+            return $r;
+        } else {
+            try {
+                Method method = type.getDeclaredMethod("decompose", Subject.class, TreeDesigner.class);
+                if(method.trySetAccessible()) {
+                    int modifiers = method.getModifiers();
+                    if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
+                        return (Subject)method.invoke(null, Suite.set(o), this);
+                    }
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+            try {
+                Method method = type.getMethod("decompose", Subject.class);
+                if(method.trySetAccessible()) {
+                    int modifiers = method.getModifiers();
+                    if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
+                        var $r = (Subject)method.invoke(null, Suite.set(o));
+                        if(attachingTypes) attachType($r, type);
+                        $decompositions.set(o, $r);
+                        return $r;
+                    }
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+            if(o instanceof Interpreted) {
+                var $r = ((Interpreted)o).interpret();
+                if(attachingTypes) attachType($r, type);
+                $decompositions.set(o, $r);
+                return $r;
+            }
+        }
+        System.err.println("Can't decompose " + o);
+        return Suite.set();
+    }
+
+    void attachType(Subject $, Class<?> type) {
+        $.strictSet($.direct(), hashXray, wrapType(type));
+    }
+
+    Subject wrapType(Class<?> type) {
+        Subject $wrappedType = Suite.set();
+        var $1 = $classAliases.up(type).get();
+        if($1.present()) $wrappedType.set(new StringXray($1.asExpected()));
+        else {
+            if(type.isArray()) {
+                $wrappedType.set(new AutoXray(), wrapType(type.getComponentType()));
+            } else {
+                $wrappedType.set(new StringXray(type.getName()));
+            }
+        }
+        return $wrappedType;
+    }
+
+    Subject interpretArray(Object array) {
+        Class<?> type = array.getClass().getComponentType();
+        var $ = Suite.set();
+
+        if (type.isPrimitive()) {
+            if (type == Integer.TYPE) {
+                int[] a = (int[]) array;
+                for(var i : a) $.addUp(i);
+            } else if (type == Byte.TYPE) {
+                byte[] a = (byte[]) array;
+                for(var i : a) $.addUp(i);
+            } else if (type == Long.TYPE) {
+                long[] a = (long[]) array;
+                for(var i : a) $.addUp(i);
+            } else if (type == Float.TYPE) {
+                float[] a = (float[]) array;
+                for(var i : a) $.addUp(i);
+            } else if (type == Double.TYPE) {
+                double[] a = (double[]) array;
+                for(var i : a) $.addUp(i);
+            } else if (type == Short.TYPE) {
+                short[] a = (short[]) array;
+                for(var i : a) $.addUp(i);
+            } else if (type == Character.TYPE) {
+                char[] a = (char[]) array;
+                for(var i : a) $.addUp(i);
+            } else if (type == Boolean.TYPE) {
+                boolean[] a = (boolean[]) array;
+                for(var i : a) $.addUp(i);
+            } else {
+                throw new InternalError();
+            }
+        } else {
+            Object[] a = (Object[]) array;
+            for(var i : a) $.addUp(i);
+        }
+        return $;
+    }
+
+}
