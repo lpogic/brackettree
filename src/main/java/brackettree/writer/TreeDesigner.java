@@ -208,7 +208,7 @@ public class TreeDesigner {
         if(o instanceof String) return new StringXray($prim.asExpected());
         if(o instanceof Suite.Auto) return new AutoXray();
 
-        ObjectXray xray = $refs.getAt(new ObjectXray(o)).asExpected();
+        ObjectXray xray = $refs.sate(new ObjectXray(o)).asExpected();
         if(xray.usages++ < 1) {
             var $ = decompose(o);
             $refs.set(xray, $);

@@ -30,8 +30,8 @@ public class Main {
 
     public static void main(String[] args) {
 //        System.out.println(Integer[].class);
-//
-//        System.out.println(BracketTree.writer().encode(new Foo[]{new Foo(1, 2), new Foo(3, 4)}));
+
+        System.out.println(BracketTree.writer().encode(new Foo[]{new Foo(1, 2), new Foo(3, 4, new Foo(5, 6))}));
 //        BracketTree.parse("#[[int]][1][2][3]");
         System.out.println(BracketTree.parse("#[ [ [ int ] ] ][ [ 1 ] ][ [ 2 ][ 3 ] ]").direct().getClass());
         int[][] i = new int[][]{{1}, {2, 3}};
