@@ -68,12 +68,12 @@ public class BracketTreeProcessor implements IntProcessor {
                 break;
             case TREE:
                 if (i == extendSign) {
-                    Subject newWork = Suite.set();
+                    Subject newWork;
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        work.setIf(secondaryBuilder.toString(), newWork, work::absent);
+                        newWork = work.up(secondaryBuilder.toString()).set();
                     } else {
-                        work.add(newWork);
+                        work.add(newWork = Suite.set());
                     }
                     branch.add(work);
                     work = newWork;
@@ -82,7 +82,7 @@ public class BracketTreeProcessor implements IntProcessor {
                  } else if (i == closeSign) {
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        work.setIf(secondaryBuilder.toString(), work::absent);
+                        work.up(secondaryBuilder.toString()).setIf(Subject::absent);
                     }
                     if(branch.empty()) state = State.BEFORE;
                     else work = branch.pop();
@@ -113,10 +113,11 @@ public class BracketTreeProcessor implements IntProcessor {
     public Subject finish() {
         if(state == State.TREE) {
             appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
-            if(secondaryBuilder != null) work.setIf(secondaryBuilder.toString(), work::absent);
+            if(secondaryBuilder != null)
+                work.up(secondaryBuilder.toString()).setIf(Subject::absent);
         } else if(state == State.FENCE) {
             appendSecondaryBuilder(primaryBuilder.toString(),false);
-            work.setIf(secondaryBuilder.toString(), work::absent);
+            work.up(secondaryBuilder.toString()).setIf(Subject::absent);
         }
         while (!branch.empty()) work = branch.pop();
         return work;

@@ -33,7 +33,10 @@ public class StandardInterpreter {
                     int modifiers = field.getModifiers();
                     if (!Modifier.isTransient(modifiers) && !Modifier.isStatic(modifiers)) {
                         field.setAccessible(true);
-                        $.setIf(field.getName(), Suite.set(field.get(interpreted)), $::absent);
+                        var $1 = $.up(field.getName());
+                        if($1.absent()) {
+                            $1.set(field.get(interpreted));
+                        }
                     }
                 } catch (Exception ex) {
                     System.err.println("Cant get '" + field.getName() + "' from " + aClass);
