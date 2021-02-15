@@ -1,6 +1,6 @@
 package brackettree.reader;
 
-import brackettree.processor.IntProcessor;
+import suite.processor.IntProcessor;
 import suite.suite.Subject;
 import suite.suite.Suite;
 
@@ -35,13 +35,12 @@ public class BracketTreeProcessor implements IntProcessor {
     }
 
     @Override
-    public Subject ready() {
+    public void getReady() {
         branch = new Stack<>();
         work = Suite.set();
         state = State.BEFORE;
         primaryBuilder = new StringBuilder();
         secondaryBuilder = new StringBuilder();
-        return Suite.set();
     }
 
     public void advance(int i) {
@@ -71,9 +70,9 @@ public class BracketTreeProcessor implements IntProcessor {
                     Subject newWork;
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        newWork = work.up(secondaryBuilder.toString()).set();
+                        newWork = work.in(secondaryBuilder.toString()).set();
                     } else {
-                        work.add(newWork = Suite.set());
+                        work.put(newWork = Suite.set());
                     }
                     branch.add(work);
                     work = newWork;
@@ -82,7 +81,7 @@ public class BracketTreeProcessor implements IntProcessor {
                  } else if (i == closeSign) {
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        work.up(secondaryBuilder.toString()).setIf(Subject::absent);
+                        work.in(secondaryBuilder.toString()).setIf(Subject::absent);
                     }
                     if(branch.empty()) state = State.BEFORE;
                     else work = branch.pop();
@@ -114,10 +113,10 @@ public class BracketTreeProcessor implements IntProcessor {
         if(state == State.TREE) {
             appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
             if(secondaryBuilder != null)
-                work.up(secondaryBuilder.toString()).setIf(Subject::absent);
+                work.in(secondaryBuilder.toString()).setIf(Subject::absent);
         } else if(state == State.FENCE) {
             appendSecondaryBuilder(primaryBuilder.toString(),false);
-            work.up(secondaryBuilder.toString()).setIf(Subject::absent);
+            work.in(secondaryBuilder.toString()).setIf(Subject::absent);
         }
         while (!branch.empty()) work = branch.pop();
         return work;

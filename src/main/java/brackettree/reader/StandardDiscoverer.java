@@ -12,14 +12,14 @@ public class StandardDiscoverer {
 
     public static Subject getAll() {
         return Suite.
-                setUp(Boolean.class, (Action) StandardDiscoverer::discoverBoolean).
-                setUp(Integer.class, (Action) StandardDiscoverer::discoverInteger).
-                setUp(Double.class, (Action) StandardDiscoverer::discoverDouble).
-                setUp(Float.class, (Action) StandardDiscoverer::discoverFloat).
-                setUp(Subject.class, (Action) StandardDiscoverer::discoverSubject).
-                setUp(String.class, (Action) StandardDiscoverer::discoverString).
-                setUp(Object.class, (Action) StandardDiscoverer::discoverObject).
-                setUp(List.class, (Action) StandardDiscoverer::discoverList)
+                inset(Boolean.class, (Action) StandardDiscoverer::discoverBoolean).
+                inset(Integer.class, (Action) StandardDiscoverer::discoverInteger).
+                inset(Double.class, (Action) StandardDiscoverer::discoverDouble).
+                inset(Float.class, (Action) StandardDiscoverer::discoverFloat).
+                inset(Subject.class, (Action) StandardDiscoverer::discoverSubject).
+                inset(String.class, (Action) StandardDiscoverer::discoverString).
+                inset(Object.class, (Action) StandardDiscoverer::discoverObject).
+                inset(List.class, (Action) StandardDiscoverer::discoverList)
                 ;
     }
 
@@ -60,7 +60,7 @@ public class StandardDiscoverer {
 
     public static Subject discoverObject(Subject $) {
         if($.absent()) return Suite.set();
-        if($.size() == 1 && $.up().absent() && $.is(String.class)) return discoverString($);
+        if($.size() == 1 && $.in().absent() && $.is(String.class)) return discoverString($);
 
         return discoverSubject($);
     }
@@ -68,7 +68,7 @@ public class StandardDiscoverer {
     public static Subject discoverSubject(Subject $) {
         var $r = Suite.set();
         for(var $1 : $) {
-            var o = $1.up().direct();
+            var o = $1.in().direct();
             if(o instanceof Subject) $r.set($1.direct(), (Subject) o);
             else $r.set($1.direct(), Suite.set(o));
         }
@@ -76,7 +76,7 @@ public class StandardDiscoverer {
     }
 
     public static Subject discoverList(Subject $) {
-        return Suite.set($.eachUp().eachDirect().toList());
+        return Suite.set($.eachIn().eachDirect().toList());
     }
 
     public static void discover(Discovered reformable, Subject $) {
@@ -89,10 +89,10 @@ public class StandardDiscoverer {
                         Class<?> fieldType = field.getType();
                         if(fieldType.isPrimitive()) {
                             if(fieldType.equals(int.class)) {
-                                field.setInt(reformable, $.up(field.getName()).as(Integer.class, 0));
+                                field.setInt(reformable, $.in(field.getName()).as(Integer.class, 0));
                             }
                         } else {
-                            field.set(reformable, $.up(field.getName()).as(fieldType, null));
+                            field.set(reformable, $.in(field.getName()).as(fieldType, null));
                         }
                     }
                 }

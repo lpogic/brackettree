@@ -119,10 +119,10 @@ public class BracketTreeWriter {
     }
 
     public BracketTreeWriter with(Subject $params) {
-        if($params.present("root")) root = $params.up("root").as(Boolean.class, true);
-        if($params.present("compact")) compact = $params.up("compact").as(Boolean.class, true);
+        if($params.present("root")) root = $params.in("root").as(Boolean.class, true);
+        if($params.present("compact")) compact = $params.in("compact").as(Boolean.class, true);
         if($params.present("attachingTypes"))
-            designer.setAttachingTypes($params.up("attachingTypes").as(Boolean.class, true));
+            designer.setAttachingTypes($params.in("attachingTypes").as(Boolean.class, true));
         return this;
     }
 

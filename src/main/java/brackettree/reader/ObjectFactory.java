@@ -28,12 +28,12 @@ public class ObjectFactory {
         setComposers(StandardDiscoverer.getAll());
         setComposers($composers);
         $classAliases.alter(Suite.
-                setUp("int", Integer.class).
-                setUp("double", Double.class).
-                setUp("float", Float.class).
-                setUp("list", List.class).
-                setUp("subject", Subject.class).
-                setUp("string", String.class)
+                inset("int", Integer.class).
+                inset("double", Double.class).
+                inset("float", Float.class).
+                inset("list", List.class).
+                inset("subject", Subject.class).
+                inset("string", String.class)
         );
         elementaryComposer = str -> Suite.set();
     }
@@ -41,15 +41,15 @@ public class ObjectFactory {
     public FactoryVendor load(Subject $root) {
         $references = Suite.set();
         $inferredTypes = Suite.set();
-        for(var $1 : Suite.postDfs(Suite.add($root), s -> s.exclude(s1 -> {
+        for(var $1 : Suite.postDfs(Suite.put($root), s -> s.exclude(s1 -> {
             var o = s1.direct();
             return "#".equals(o) || "@".equals(o) || "@/".equals(o);
-        })).eachUp()) {
+        })).eachIn()) {
             var $hash = $1.take("#");
             var $at = $1.take("@");
             $1.unset("@/");
-            if($hash.up().present()) inferType($1, $hash.up().get());
-            if($at.present()) $references.set($at.up().direct(), $1);
+            if($hash.in().present()) inferType($1, $hash.in().get());
+            if($at.present()) $references.set($at.in().direct(), $1);
         }
         $references.alter($externalReferences);
         return factoryVendor($root);
@@ -59,24 +59,24 @@ public class ObjectFactory {
         if(ref.startsWith("@")) ref = ref.substring(1);
         var $s = Suite.set();
         $externalReferences.set(ref, $s);
-        $compositions.up($s).set(param);
+        $compositions.in($s).set(param);
     }
 
     public void setClassAlias(String alias, Class<?> aClass) {
-        $classAliases.up(alias).set(aClass);
+        $classAliases.in(alias).set(aClass);
     }
 
     public void setComposer(Class<?> type, Action constructor) {
-        $composers.up(type).set(constructor);
+        $composers.in(type).set(constructor);
     }
 
     public void setComposer(Class<?> type, BiConsumer<Subject, ObjectFactory> constructor) {
-        $composers.up(type).set(constructor);
+        $composers.in(type).set(constructor);
     }
 
     public void setComposers(Series composers) {
         $composers.alter(composers.select(v -> v.is(Class.class) &&
-                (v.up().is(Action.class) || v.up().is(BiConsumer.class))
+                (v.in().is(Action.class) || v.in().is(BiConsumer.class))
         ));
     }
 
@@ -90,14 +90,14 @@ public class ObjectFactory {
             $ = findReferred($);
         }
 
-        var $v = $compositions.up($).get();
+        var $v = $compositions.in($).get();
         if($v.present()) {
             if($v.is(expectedType) || $v.direct() == null) return $v;
             else  System.err.println("Expected type (" + expectedType +
                     ") is not supertype of backed object type (" + $v.direct().getClass() + ")");
         }
 
-        var $inferredType = $inferredTypes.up($).get();
+        var $inferredType = $inferredTypes.in($).get();
 
         if($inferredType.is(Class.class)) {
             Class<?> inferredType = $inferredType.asExpected();
@@ -116,13 +116,13 @@ public class ObjectFactory {
     }
 
     boolean isReference(Subject $) {
-        return $.size() == 1 && $.up().absent() && $.as(String.class, "").startsWith("@");
+        return $.size() == 1 && $.in().absent() && $.as(String.class, "").startsWith("@");
     }
 
     Subject findReferred(Subject $) {
         do {
             String str = $.asExpected();
-            $ = $references.up(str.substring(1)).get();
+            $ = $references.in(str.substring(1)).get();
         } while (isReference($));
         return $;
     }
@@ -131,7 +131,7 @@ public class ObjectFactory {
         Suite.refactor($typeTree, $ -> {
             if($.is(String.class)) {
                 var $type = findType($.asString());
-                if($type.present()) return Suite.set($type.direct(), $.up().get());
+                if($type.present()) return Suite.set($type.direct(), $.in().get());
                 else return Suite.set();
             } else return $;
         });
@@ -142,12 +142,12 @@ public class ObjectFactory {
         Class<?> type = Object.class;
         for(var $ : $s) {
             Class<?> componentType = Object.class;
-            if($typeTree.up().present()) {
-                componentType = inferTypeRq($.eachUp(), $typeTree.up().get());
+            if($typeTree.in().present()) {
+                componentType = inferTypeRq($.eachIn(), $typeTree.in().get());
             }
             type = $typeTree.is(Class.class) ? $typeTree.asExpected() : componentType.arrayType();
             if($inferredTypes.absent($)) {
-                $inferredTypes.setUp($, type);
+                $inferredTypes.inset($, type);
             }
         }
         return type;
@@ -155,7 +155,7 @@ public class ObjectFactory {
 
     Subject findType(String type) {
         if ($classAliases.present(type)) {
-            return $classAliases.up(type).get();
+            return $classAliases.in(type).get();
         }
 
         try {
@@ -169,14 +169,14 @@ public class ObjectFactory {
 
     Subject compose(Subject $, Class<?> type) {
 
-        var $composer = $composers.up(type).get();
+        var $composer = $composers.in(type).get();
 
         if ($composer.is(Action.class)) {
 
             Action constructor = $composer.asExpected();
             var $r = constructor.play(factoryVendorRoot($));
             if ($r.present()) {
-                $compositions.up($).set($r.direct());
+                $compositions.in($).set($r.direct());
                 return $r;
             }
         }
@@ -186,7 +186,7 @@ public class ObjectFactory {
             BiConsumer<Vendor, ObjectFactory> consumer = $composer.asExpected();
             consumer.accept(factoryVendorRoot($), this);
             if($compositions.present($)) {
-                return $compositions.up($).get();
+                return $compositions.in($).get();
             }
         }
 
@@ -194,7 +194,7 @@ public class ObjectFactory {
 
             var $r = composeArray(factoryVendorRoot($), type.getComponentType());
             if ($r.present()) {
-                $compositions.up($).set($r.direct());
+                $compositions.in($).set($r.direct());
                 return $r;
             }
         }
@@ -206,7 +206,7 @@ public class ObjectFactory {
                 if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
                     var $r = (Subject)method.invoke(null, factoryVendorRoot($));
                     if ($r.present()) {
-                        $compositions.up($).set($r.direct());
+                        $compositions.in($).set($r.direct());
                         return $r;
                     }
                 }
@@ -220,7 +220,7 @@ public class ObjectFactory {
                 if(Modifier.isStatic(modifiers)) {
                     method.invoke(null, factoryVendorRoot($), this);
                     if($compositions.present($)) {
-                        return $compositions.up($).get();
+                        return $compositions.in($).get();
                     }
                 }
             }
@@ -231,7 +231,7 @@ public class ObjectFactory {
             try {
                 Constructor<?> constructor = type.getDeclaredConstructor();
                 Discovered reformable = (Discovered)constructor.newInstance();
-                $compositions.up($).set(reformable);
+                $compositions.in($).set(reformable);
                 reformable.discover(factoryVendorRoot($));
                 return Suite.set(reformable);
             } catch (NoSuchMethodException | IllegalAccessException |
@@ -246,7 +246,7 @@ public class ObjectFactory {
     Subject composeArray(Subject $, Class<?> componentType) {
         Object[] a = (Object[])Array.newInstance(componentType, $.size());
         int i = 0;
-        for(var $up : $.eachUp()) {
+        for(var $up : $.eachIn()) {
             a[i++] = $up.asExpected();
         }
         return Suite.set(a);

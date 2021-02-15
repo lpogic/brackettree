@@ -119,15 +119,15 @@ public class TreeDesigner {
     public TreeDesigner() {
         setDecomposers(StandardInterpreter.getAllSupported());
         $classAliases.alter(Suite.
-                setUp(Integer.class, "int").
-                setUp(int.class, "int").
-                setUp(Double.class, "double").
-                setUp(double.class, "double").
-                setUp(Float.class, "float").
-                setUp(float.class, "float").
-                setUp(List.class, "list").
-                setUp(SolidSubject.class, "subject").
-                setUp(String.class, "string")
+                inset(Integer.class, "int").
+                inset(int.class, "int").
+                inset(Double.class, "double").
+                inset(double.class, "double").
+                inset(Float.class, "float").
+                inset(float.class, "float").
+                inset(List.class, "list").
+                inset(SolidSubject.class, "subject").
+                inset(String.class, "string")
         );
         elementaryDecomposer = o -> {
             if(o == null) return Suite.set("null");
@@ -154,16 +154,16 @@ public class TreeDesigner {
     }
 
     public void setDecomposer(Class<?> type, Action decomposer) {
-        $decomposers.up(type).set(decomposer);
+        $decomposers.in(type).set(decomposer);
     }
 
     public<T> void setDecomposer(Class<T> type, BiConsumer<T, TreeDesigner> decomposer) {
-        $decomposers.up(type).set(decomposer);
+        $decomposers.in(type).set(decomposer);
     }
 
     public void setDecomposers(Series $decomposers) {
         this.$decomposers.alter($decomposers.select(v -> v.is(Class.class) &&
-                (v.up().is(Action.class) || v.up().is(BiConsumer.class))
+                (v.in().is(Action.class) || v.in().is(BiConsumer.class))
         ));
     }
 
@@ -172,7 +172,7 @@ public class TreeDesigner {
     }
 
     public void setClassAlias(Class<?> aClass, String alias) {
-        $classAliases.up(aClass).set(alias);
+        $classAliases.in(aClass).set(alias);
     }
 
     public Subject load(Object o) {
@@ -180,18 +180,18 @@ public class TreeDesigner {
         var xray = xray(o);
         var $xRoot = Suite.set(xray);
         int id = 0;
-        for(var $i : Suite.preDfs(Suite.add($xRoot)).eachUp()) {
+        for(var $i : Suite.preDfs(Suite.put($xRoot)).eachIn()) {
             for(var $i1 : $i) {
                 if($i1.is(ObjectXray.class)) {
                     ObjectXray x = $i1.asExpected();
-                    if (x.usages < 2 && $i.size() == 1 && $i1.up().absent()) {
-                        $i.unset().alter($refs.up(x).get());
+                    if (x.usages < 2 && $i.size() == 1 && $i1.in().absent()) {
+                        $i.unset().alter($refs.in(x).get());
                     } else {
                         if (x.refId == null) {
                             x.refId = "" + id++;
-                            var $r = $refs.up(x).get();
-                            $r.strictSet($r.first().direct(), atXray, Suite.set(new StringXray(x.refId)));
-                            $i.up(slimeXray).set(new AutoXray(), $r);
+                            var $r = $refs.in(x).get();
+                            $r.exactSet($r.first().direct(), atXray, Suite.set(new StringXray(x.refId)));
+                            $i.in(slimeXray).set(new AutoXray(), $r);
                         }
                     }
                 }
@@ -212,7 +212,7 @@ public class TreeDesigner {
         if(xray.usages++ < 1) {
             var $ = decompose(o);
             $refs.set(xray, $);
-            for(var $i : Suite.preDfs(Suite.add($)).eachUp()) {
+            for(var $i : Suite.preDfs(Suite.put($)).eachIn()) {
                 for(var i : $i.eachDirect()) {
                     $i.shift(i, xray(i));
                 }
@@ -224,11 +224,11 @@ public class TreeDesigner {
 
     Subject decompose(Object o) {
 
-        if($decompositions.present(o)) return $decompositions.up(o).get();
+        if($decompositions.present(o)) return $decompositions.in(o).get();
 
         Class<?> type = o.getClass();
 
-        var $decomposer = $decomposers.up(type).get();
+        var $decomposer = $decomposers.in(type).get();
         if($decomposer.present()) {
             if ($decomposer.is(Action.class)) {
 
@@ -240,7 +240,7 @@ public class TreeDesigner {
             } else if ($decomposer.is(BiConsumer.class)) {
                 BiConsumer<Object, TreeDesigner> consumer = $decomposer.asExpected();
                 consumer.accept(o, this);
-                return $decompositions.up(o).get();
+                return $decompositions.in(o).get();
             }
         } else if(type.isArray()) {
             var $r = interpretArray(o);
@@ -281,12 +281,12 @@ public class TreeDesigner {
     }
 
     void attachType(Subject $, Class<?> type) {
-        $.strictSet($.direct(), hashXray, wrapType(type));
+        $.exactSet($.direct(), hashXray, wrapType(type));
     }
 
     Subject wrapType(Class<?> type) {
         Subject $wrappedType = Suite.set();
-        var $1 = $classAliases.up(type).get();
+        var $1 = $classAliases.in(type).get();
         if($1.present()) $wrappedType.set(new StringXray($1.asExpected()));
         else {
             if(type.isArray()) {
@@ -305,34 +305,34 @@ public class TreeDesigner {
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {
                 int[] a = (int[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else if (type == Byte.TYPE) {
                 byte[] a = (byte[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else if (type == Long.TYPE) {
                 long[] a = (long[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else if (type == Float.TYPE) {
                 float[] a = (float[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else if (type == Double.TYPE) {
                 double[] a = (double[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else if (type == Short.TYPE) {
                 short[] a = (short[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else if (type == Character.TYPE) {
                 char[] a = (char[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else if (type == Boolean.TYPE) {
                 boolean[] a = (boolean[]) array;
-                for(var i : a) $.addUp(i);
+                for(var i : a) $.input(i);
             } else {
                 throw new InternalError();
             }
         } else {
             Object[] a = (Object[]) array;
-            for(var i : a) $.addUp(i);
+            for(var i : a) $.input(i);
         }
         return $;
     }

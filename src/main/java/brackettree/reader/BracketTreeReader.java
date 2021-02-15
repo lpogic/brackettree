@@ -111,7 +111,7 @@ public class BracketTreeReader {
 
     Subject load(InputStream inputStream) throws BracketTreeReadException {
         BracketTreeProcessor processor = new BracketTreeProcessor();
-        processor.ready();
+        processor.getReady();
         try (inputStream) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             int code = reader.read();
