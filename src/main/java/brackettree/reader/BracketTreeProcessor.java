@@ -72,7 +72,7 @@ public class BracketTreeProcessor implements IntProcessor {
                     if(secondaryBuilder != null) {
                         newWork = work.in(secondaryBuilder.toString()).set();
                     } else {
-                        work.put(newWork = Suite.set());
+                        work.input(newWork = Suite.set());
                     }
                     branch.add(work);
                     work = newWork;
@@ -81,7 +81,7 @@ public class BracketTreeProcessor implements IntProcessor {
                  } else if (i == closeSign) {
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        work.in(secondaryBuilder.toString()).setIf(Subject::absent);
+                        work.sate(secondaryBuilder.toString());
                     }
                     if(branch.empty()) state = State.BEFORE;
                     else work = branch.pop();
@@ -113,10 +113,10 @@ public class BracketTreeProcessor implements IntProcessor {
         if(state == State.TREE) {
             appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
             if(secondaryBuilder != null)
-                work.in(secondaryBuilder.toString()).setIf(Subject::absent);
+                work.sate(secondaryBuilder.toString());
         } else if(state == State.FENCE) {
             appendSecondaryBuilder(primaryBuilder.toString(),false);
-            work.in(secondaryBuilder.toString()).setIf(Subject::absent);
+            work.sate(secondaryBuilder.toString());
         }
         while (!branch.empty()) work = branch.pop();
         return work;

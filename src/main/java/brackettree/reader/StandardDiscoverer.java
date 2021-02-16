@@ -12,14 +12,14 @@ public class StandardDiscoverer {
 
     public static Subject getAll() {
         return Suite.
-                inset(Boolean.class, (Action) StandardDiscoverer::discoverBoolean).
-                inset(Integer.class, (Action) StandardDiscoverer::discoverInteger).
-                inset(Double.class, (Action) StandardDiscoverer::discoverDouble).
-                inset(Float.class, (Action) StandardDiscoverer::discoverFloat).
-                inset(Subject.class, (Action) StandardDiscoverer::discoverSubject).
-                inset(String.class, (Action) StandardDiscoverer::discoverString).
-                inset(Object.class, (Action) StandardDiscoverer::discoverObject).
-                inset(List.class, (Action) StandardDiscoverer::discoverList)
+                set(Boolean.class, (Action) StandardDiscoverer::discoverBoolean).
+                set(Integer.class, (Action) StandardDiscoverer::discoverInteger).
+                set(Double.class, (Action) StandardDiscoverer::discoverDouble).
+                set(Float.class, (Action) StandardDiscoverer::discoverFloat).
+                set(Subject.class, (Action) StandardDiscoverer::discoverSubject).
+                set(String.class, (Action) StandardDiscoverer::discoverString).
+                set(Object.class, (Action) StandardDiscoverer::discoverObject).
+                set(List.class, (Action) StandardDiscoverer::discoverList)
                 ;
     }
 
@@ -69,8 +69,8 @@ public class StandardDiscoverer {
         var $r = Suite.set();
         for(var $1 : $) {
             var o = $1.in().direct();
-            if(o instanceof Subject) $r.set($1.direct(), (Subject) o);
-            else $r.set($1.direct(), Suite.set(o));
+            if(o instanceof Subject) $r.inset($1.direct(), (Subject) o);
+            else $r.inset($1.direct(), Suite.set(o));
         }
         return Suite.set($r);
     }

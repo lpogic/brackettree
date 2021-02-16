@@ -15,12 +15,12 @@ public class StandardInterpreter {
 
     public static Subject getAllSupported() {
         return Suite.
-                inset(Integer.class, (Action)StandardInterpreter::interpretPrimitive).
-                inset(ArrayList.class, (Action)StandardInterpreter::interpretCollection).
-                inset(HashSet.class, (Action)StandardInterpreter::interpretCollection).
-                inset(HashMap.class, (Action)StandardInterpreter::interpretMap).
-                inset(File.class, (Action)StandardInterpreter::interpretFile).
-                inset(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
+                set(Integer.class, (Action)StandardInterpreter::interpretPrimitive).
+                set(ArrayList.class, (Action)StandardInterpreter::interpretCollection).
+                set(HashSet.class, (Action)StandardInterpreter::interpretCollection).
+                set(HashMap.class, (Action)StandardInterpreter::interpretMap).
+                set(File.class, (Action)StandardInterpreter::interpretFile).
+                set(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
                 ;
     }
 
@@ -60,14 +60,14 @@ public class StandardInterpreter {
     public static Subject interpretCollection(Subject $in) {
         Collection<?> collection = $in.asExpected();
         var $ = Suite.set();
-        collection.forEach(o -> $.in().set(o));
+        collection.forEach($::put);
         return $;
     }
 
     public static Subject interpretMap(Subject $in) {
         Map<?, ?> map = $in.asExpected();
         var $ = Suite.set();
-        map.forEach((key, value) -> $.in(key).set(value));
+        map.forEach($::set);
         return $;
     }
 

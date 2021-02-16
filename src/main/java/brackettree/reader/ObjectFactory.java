@@ -28,12 +28,12 @@ public class ObjectFactory {
         setComposers(StandardDiscoverer.getAll());
         setComposers($composers);
         $classAliases.alter(Suite.
-                inset("int", Integer.class).
-                inset("double", Double.class).
-                inset("float", Float.class).
-                inset("list", List.class).
-                inset("subject", Subject.class).
-                inset("string", String.class)
+                set("int", Integer.class).
+                set("double", Double.class).
+                set("float", Float.class).
+                set("list", List.class).
+                set("subject", Subject.class).
+                set("string", String.class)
         );
         elementaryComposer = str -> Suite.set();
     }
@@ -41,7 +41,7 @@ public class ObjectFactory {
     public FactoryVendor load(Subject $root) {
         $references = Suite.set();
         $inferredTypes = Suite.set();
-        for(var $1 : Suite.postDfs(Suite.put($root), s -> s.exclude(s1 -> {
+        for(var $1 : Suite.postDfs(Suite.input($root), s -> s.exclude(s1 -> {
             var o = s1.direct();
             return "#".equals(o) || "@".equals(o) || "@/".equals(o);
         })).eachIn()) {
@@ -147,7 +147,7 @@ public class ObjectFactory {
             }
             type = $typeTree.is(Class.class) ? $typeTree.asExpected() : componentType.arrayType();
             if($inferredTypes.absent($)) {
-                $inferredTypes.inset($, type);
+                $inferredTypes.set($, type);
             }
         }
         return type;
