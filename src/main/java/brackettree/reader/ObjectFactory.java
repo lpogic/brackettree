@@ -128,7 +128,7 @@ public class ObjectFactory {
     }
 
     void inferType(Subject $root, Subject $typeTree) {
-        Suite.refactor($typeTree, $ -> {
+        Suite.deepConvert($typeTree, $ -> {
             if($.is(String.class)) {
                 var $type = findType($.asString());
                 if($type.present()) return Suite.set($type.direct(), $.in().get());
