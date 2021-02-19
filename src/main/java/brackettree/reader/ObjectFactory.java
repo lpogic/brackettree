@@ -200,7 +200,7 @@ public class ObjectFactory {
         }
 
         try {
-            Method method = type.getDeclaredMethod("compose", Subject.class);
+            Method method = type.getMethod("compose", Subject.class);
             if(method.trySetAccessible()) {
                 int modifiers = method.getModifiers();
                 if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
@@ -216,7 +216,7 @@ public class ObjectFactory {
         }
 
         try {
-            Method method = type.getDeclaredMethod("compose", Subject.class, ObjectFactory.class);
+            Method method = type.getMethod("compose", Subject.class, ObjectFactory.class);
             if(method.trySetAccessible()) {
                 int modifiers = method.getModifiers();
                 if(Modifier.isStatic(modifiers)) {
