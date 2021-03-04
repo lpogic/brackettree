@@ -3,7 +3,7 @@ package brackettree.writer;
 import brackettree.Interpreted;
 import suite.suite.SolidSubject;
 import suite.suite.Subject;
-import suite.suite.Suite;
+import static suite.suite.$uite.*;
 import suite.suite.action.Action;
 
 import java.io.File;
@@ -14,18 +14,17 @@ import java.util.*;
 public class StandardInterpreter {
 
     public static Subject getAllSupported() {
-        return Suite.
-                set(Integer.class, (Action)StandardInterpreter::interpretPrimitive).
-                set(ArrayList.class, (Action)StandardInterpreter::interpretCollection).
-                set(HashSet.class, (Action)StandardInterpreter::interpretCollection).
-                set(HashMap.class, (Action)StandardInterpreter::interpretMap).
-                set(File.class, (Action)StandardInterpreter::interpretFile).
-                set(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
+        return $arm(Integer.class, (Action)StandardInterpreter::interpretPrimitive).
+                arm(ArrayList.class, (Action)StandardInterpreter::interpretCollection).
+                arm(HashSet.class, (Action)StandardInterpreter::interpretCollection).
+                arm(HashMap.class, (Action)StandardInterpreter::interpretMap).
+                arm(File.class, (Action)StandardInterpreter::interpretFile).
+                arm(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
                 ;
     }
 
     public static Subject interpret(Interpreted interpreted) {
-        var $ = Suite.set();
+        var $ = $();
         for(Class<?> aClass = interpreted.getClass(); aClass != Object.class; aClass = aClass.getSuperclass()) {
             Field[] fields = aClass.getDeclaredFields();
             for (Field field : fields) {
@@ -47,7 +46,7 @@ public class StandardInterpreter {
     }
 
     public static Subject interpretPrimitive(Subject $in) {
-        return Suite.set(Objects.toString($in.direct()));
+        return $(Objects.toString($in.raw()));
     }
 
 //    public static void interpretPrimitive(Object o, TreeDesigner designer) {
@@ -59,15 +58,15 @@ public class StandardInterpreter {
 
     public static Subject interpretCollection(Subject $in) {
         Collection<?> collection = $in.asExpected();
-        var $ = Suite.set();
-        collection.forEach($::put);
+        var $ = $();
+        collection.forEach($::add);
         return $;
     }
 
     public static Subject interpretMap(Subject $in) {
         Map<?, ?> map = $in.asExpected();
-        var $ = Suite.set();
-        map.forEach($::set);
+        var $ = $();
+        map.forEach($::arm);
         return $;
     }
 
@@ -77,7 +76,7 @@ public class StandardInterpreter {
 
     public static Subject interpretFile(Subject $in) {
         File file = $in.asExpected();
-        return Suite.set(file.getPath());
+        return $(file.getPath());
     }
 
 }

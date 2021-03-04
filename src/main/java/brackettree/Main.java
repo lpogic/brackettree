@@ -1,6 +1,10 @@
 package brackettree;
 
 import brackettree.reader.BracketTree;
+import suite.suite.Suite;
+import suite.suite.util.Sequence;
+
+import java.util.Arrays;
 
 public class Main {
 
@@ -31,9 +35,11 @@ public class Main {
     public static void main(String[] args) {
 //        System.out.println(Integer[].class);
 
-        System.out.println(BracketTree.writer().encode(new Foo[]{new Foo(1, 2), new Foo(3, 4, new Foo(5, 6))}));
-//        BracketTree.parse("#[[int]][1][2][3]");
-        System.out.println(BracketTree.parse("#[ [ [ int ] ] ][ [ 1 ] ][ [ 2 ][ 3 ] ]").direct().getClass());
+        var foo = new Foo(5, 6);
+        System.out.println(BracketTree.writer().encode(Suite.inset(foo, Suite.set(foo, "a"))));
+//        System.out.println(BracketTree.writer().encode(new Foo[]{new Foo(1, 2), new Foo(3, 4, foo), foo}));
+//        BracketTree.parse("@[[int]][1][2][3]");
+        System.out.println(BracketTree.parse("@[[int]][1][2][#1][#[1]3]").as(Integer[].class)[3]);
         int[][] i = new int[][]{{1}, {2, 3}};
     }
 }

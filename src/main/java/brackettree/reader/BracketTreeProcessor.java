@@ -2,7 +2,7 @@ package brackettree.reader;
 
 import suite.processor.IntProcessor;
 import suite.suite.Subject;
-import suite.suite.Suite;
+import static suite.suite.$uite.*;
 
 import java.util.Stack;
 
@@ -16,7 +16,7 @@ public class BracketTreeProcessor implements IntProcessor {
     private int closeSign = ']';
     private int fenceSign = '"';
     private Stack<Subject> branch;
-    private Subject work;
+    private Subject $work;
     private State state;
     private StringBuilder primaryBuilder;
     private StringBuilder secondaryBuilder;
@@ -37,7 +37,7 @@ public class BracketTreeProcessor implements IntProcessor {
     @Override
     public void getReady() {
         branch = new Stack<>();
-        work = Suite.set();
+        $work = $();
         state = State.BEFORE;
         primaryBuilder = new StringBuilder();
         secondaryBuilder = new StringBuilder();
@@ -70,21 +70,21 @@ public class BracketTreeProcessor implements IntProcessor {
                     Subject newWork;
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        newWork = work.in(secondaryBuilder.toString()).set();
+                        newWork = $work.in(secondaryBuilder.toString()).set();
                     } else {
-                        work.input(newWork = Suite.set());
+                        $work.inset(newWork = $());
                     }
-                    branch.add(work);
-                    work = newWork;
+                    branch.add($work);
+                    $work = newWork;
                     primaryBuilder = new StringBuilder();
                     secondaryBuilder = null;
                  } else if (i == closeSign) {
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        work.sate(secondaryBuilder.toString());
+                        $work.sate(secondaryBuilder.toString());
                     }
                     if(branch.empty()) state = State.BEFORE;
-                    else work = branch.pop();
+                    else $work = branch.pop();
                     primaryBuilder = new StringBuilder();
                     secondaryBuilder = null;
                 } else if(i == fenceSign) {
@@ -113,12 +113,12 @@ public class BracketTreeProcessor implements IntProcessor {
         if(state == State.TREE) {
             appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
             if(secondaryBuilder != null)
-                work.sate(secondaryBuilder.toString());
+                $work.sate(secondaryBuilder.toString());
         } else if(state == State.FENCE) {
             appendSecondaryBuilder(primaryBuilder.toString(),false);
-            work.sate(secondaryBuilder.toString());
+            $work.sate(secondaryBuilder.toString());
         }
-        while (!branch.empty()) work = branch.pop();
-        return work;
+        while (!branch.empty()) $work = branch.pop();
+        return $work;
     }
 }

@@ -1,7 +1,7 @@
 package brackettree.reader;
 
 import suite.suite.Subject;
-import suite.suite.Suite;
+import static suite.suite.$uite.*;
 import suite.suite.action.Action;
 
 import java.io.*;
@@ -78,7 +78,7 @@ public class BracketTreeReader {
             return load(file);
         } catch (Exception e) {
             e.printStackTrace();
-            return Suite.set();
+            return $();
         }
     }
 
@@ -91,7 +91,7 @@ public class BracketTreeReader {
             return load(url);
         } catch (Exception e) {
             e.printStackTrace();
-            return Suite.set();
+            return $();
         }
     }
 
@@ -105,7 +105,7 @@ public class BracketTreeReader {
             return load(inputStream);
         } catch (Exception e) {
             e.printStackTrace();
-            return Suite.set();
+            return $();
         }
     }
 

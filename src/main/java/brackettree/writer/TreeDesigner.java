@@ -3,6 +3,8 @@ package brackettree.writer;
 import brackettree.Interpreted;
 import suite.suite.SolidSubject;
 import suite.suite.Subject;
+import static suite.suite.$uite.*;
+
 import suite.suite.Suite;
 import suite.suite.action.Action;
 import suite.suite.util.Series;
@@ -46,7 +48,7 @@ public class TreeDesigner {
 
         @Override
         public String toString(BracketTreeWriter writer) {
-            return "@" + refId;
+            return "#" + refId;
         }
 
         @Override
@@ -104,39 +106,38 @@ public class TreeDesigner {
         }
     }
 
-    static final Xray hashXray = new SpecialXray("#");
-    static final Xray atXray = new SpecialXray("@");
-    static final Xray slimeXray = new SpecialXray("@/");
+    static final Xray idXray = new SpecialXray("#");
+    static final Xray classXray = new SpecialXray("@");
 
-    Subject $refs = Suite.set();
-    Subject $decompositions = Suite.set();
+    Subject $refs = $();
+    Subject $decompositions = $();
 
-    Subject $decomposers = Suite.set();
+    Subject $decomposers = $();
     Function<Object, Subject> elementaryDecomposer;
     boolean attachingTypes;
-    Subject $classAliases = Suite.set();
+    Subject $classAliases = $();
 
     public TreeDesigner() {
         setDecomposers(StandardInterpreter.getAllSupported());
-        $classAliases.alter(Suite.
-                set(Integer.class, "int").
-                set(int.class, "int").
-                set(Double.class, "double").
-                set(double.class, "double").
-                set(Float.class, "float").
-                set(float.class, "float").
-                set(List.class, "list").
-                set(SolidSubject.class, "subject").
-                set(String.class, "string")
+        $classAliases.alter(
+                $arm(Integer.class, "int").
+                arm(int.class, "int").
+                arm(Double.class, "double").
+                arm(double.class, "double").
+                arm(Float.class, "float").
+                arm(float.class, "float").
+                arm(List.class, "list").
+                arm(SolidSubject.class, "subject").
+                arm(String.class, "string")
         );
         elementaryDecomposer = o -> {
-            if(o == null) return Suite.set("null");
-            if(o instanceof String) return Suite.set(o);
-            if(o instanceof Integer) return Suite.set(o.toString());
-            if(o instanceof Double) return Suite.set(o.toString());
-            if(o instanceof Float) return Suite.set(o.toString());
-            if(o instanceof Boolean) return Suite.set(o.toString());
-            return Suite.set();
+            if(o == null) return $("null");
+            if(o instanceof String) return $(o);
+            if(o instanceof Integer) return $(o.toString());
+            if(o instanceof Double) return $(o.toString());
+            if(o instanceof Float) return $(o.toString());
+            if(o instanceof Boolean) return $(o.toString());
+            return $();
         };
         attachingTypes = true;
     }
@@ -154,11 +155,11 @@ public class TreeDesigner {
     }
 
     public void setDecomposer(Class<?> type, Action decomposer) {
-        $decomposers.set(type, decomposer);
+        $decomposers.arm(type, decomposer);
     }
 
     public<T> void setDecomposer(Class<T> type, BiConsumer<T, TreeDesigner> decomposer) {
-        $decomposers.set(type, decomposer);
+        $decomposers.arm(type, decomposer);
     }
 
     public void setDecomposers(Series $decomposers) {
@@ -176,22 +177,30 @@ public class TreeDesigner {
     }
 
     public Subject load(Object o) {
-        $refs = Suite.set();
+        $refs = $();
         var xray = xray(o);
-        var $xRoot = Suite.set(xray);
+        var $xRoot = $(xray);
         int id = 0;
-        for(var $i : Suite.preDfs(Suite.input($xRoot)).eachIn()) {
+        for(var $i : $preDfs($inset($xRoot)).eachIn()) {
             for(var $i1 : $i) {
                 if($i1.is(ObjectXray.class)) {
                     ObjectXray x = $i1.asExpected();
+
                     if (x.usages < 2 && $i.size() == 1 && $i1.in().absent()) {
-                        $i.unset().alter($refs.in(x).get());
+                        $i.unset().alter($refs.in(x));
                     } else {
                         if (x.refId == null) {
                             x.refId = "" + id++;
                             var $r = $refs.in(x).get();
-                            $r.exactInset($r.first().direct(), atXray, Suite.set(new StringXray(x.refId)));
-                            $i.in(slimeXray).set(new AutoXray(), $r);
+                            if($i.size() == 1 && $i1.in().absent()) {
+                                $r.aimedInset($r.first().raw(), idXray, $(new StringXray(x.refId)));
+                                $i.unset().alter($r);
+                            } else {
+                                $i.shift(x, new SpecialXray("##" + x.refId));
+                                $xRoot.inset(new SpecialXray("#" + x.refId), $r);
+                            }
+                        } else if(!($i.size() == 1 && $i1.in().absent())) {
+                            $i.shift(x, new SpecialXray("##" + x.refId));
                         }
                     }
                 }
@@ -212,8 +221,8 @@ public class TreeDesigner {
         if(xray.usages++ < 1) {
             var $ = decompose(o);
             $refs.inset(xray, $);
-            for(var $i : Suite.preDfs(Suite.input($)).eachIn()) {
-                for(var i : $i.eachDirect()) {
+            for(var $i : Suite.preDfs($inset($)).eachIn()) {
+                for(var i : $i.eachRaw()) {
                     $i.shift(i, xray(i));
                 }
             }
@@ -233,7 +242,7 @@ public class TreeDesigner {
             if ($decomposer.is(Action.class)) {
 
                 Action decomposer = $decomposer.asExpected();
-                var $r = decomposer.play(Suite.set(o));
+                var $r = decomposer.play($(o));
                 if(isAttachingTypes()) attachType($r, type);
                 $decompositions.inset(o, $r);
                 return $r;
@@ -253,7 +262,7 @@ public class TreeDesigner {
                 if(method.trySetAccessible()) {
                     int modifiers = method.getModifiers();
                     if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
-                        return (Subject)method.invoke(null, Suite.set(o), this);
+                        return (Subject)method.invoke(null, $(o), this);
                     }
                 }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
@@ -262,7 +271,7 @@ public class TreeDesigner {
                 if(method.trySetAccessible()) {
                     int modifiers = method.getModifiers();
                     if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
-                        var $r = (Subject)method.invoke(null, Suite.set(o));
+                        var $r = (Subject)method.invoke(null, $(o));
                         if(attachingTypes) attachType($r, type);
                         $decompositions.inset(o, $r);
                         return $r;
@@ -277,15 +286,15 @@ public class TreeDesigner {
             }
         }
         System.err.println("Can't decompose " + o);
-        return Suite.set();
+        return $();
     }
 
     void attachType(Subject $, Class<?> type) {
-        $.exactInset($.direct(), hashXray, wrapType(type));
+        $.aimedInset($.raw(), classXray, wrapType(type));
     }
 
     Subject wrapType(Class<?> type) {
-        Subject $wrappedType = Suite.set();
+        Subject $wrappedType = $();
         var $1 = $classAliases.in(type).get();
         if($1.present()) $wrappedType.set(new StringXray($1.asExpected()));
         else {
@@ -300,39 +309,39 @@ public class TreeDesigner {
 
     Subject interpretArray(Object array) {
         Class<?> type = array.getClass().getComponentType();
-        var $ = Suite.set();
+        var $ = $();
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {
                 int[] a = (int[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else if (type == Byte.TYPE) {
                 byte[] a = (byte[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else if (type == Long.TYPE) {
                 long[] a = (long[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else if (type == Float.TYPE) {
                 float[] a = (float[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else if (type == Double.TYPE) {
                 double[] a = (double[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else if (type == Short.TYPE) {
                 short[] a = (short[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else if (type == Character.TYPE) {
                 char[] a = (char[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else if (type == Boolean.TYPE) {
                 boolean[] a = (boolean[]) array;
-                for(var i : a) $.put(i);
+                for(var i : a) $.add(i);
             } else {
                 throw new InternalError();
             }
         } else {
             Object[] a = (Object[]) array;
-            for(var i : a) $.put(i);
+            for(var i : a) $.add(i);
         }
         return $;
     }
