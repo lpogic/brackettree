@@ -120,7 +120,7 @@ public class TreeDesigner {
     public TreeDesigner() {
         setDecomposers(StandardInterpreter.getAllSupported());
         $classAliases.alter(
-                $arm(Integer.class, "int").
+                arm$(Integer.class, "int").
                 arm(int.class, "int").
                 arm(Double.class, "double").
                 arm(double.class, "double").
@@ -181,7 +181,7 @@ public class TreeDesigner {
         var xray = xray(o);
         var $xRoot = $(xray);
         int id = 0;
-        for(var $i : $preDfs($inset($xRoot)).eachIn()) {
+        for(var $i : preDfs$(inset$($xRoot)).eachIn()) {
             for(var $i1 : $i) {
                 if($i1.is(ObjectXray.class)) {
                     ObjectXray x = $i1.asExpected();
@@ -221,7 +221,7 @@ public class TreeDesigner {
         if(xray.usages++ < 1) {
             var $ = decompose(o);
             $refs.inset(xray, $);
-            for(var $i : Suite.preDfs($inset($)).eachIn()) {
+            for(var $i : preDfs$(inset$($)).eachIn()) {
                 for(var i : $i.eachRaw()) {
                     $i.shift(i, xray(i));
                 }

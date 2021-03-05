@@ -29,7 +29,7 @@ public class ObjectFactory {
         setComposers(StandardDiscoverer.getAll());
         setComposers($composers);
         $classAliases.alter(
-                $arm("int", Integer.class).
+                arm$("int", Integer.class).
                 arm("double", Double.class).
                 arm("float", Float.class).
                 arm("list", List.class).
@@ -42,7 +42,7 @@ public class ObjectFactory {
     public FactoryVendor load(Subject $root) {
         $references = $();
         $inferredTypes = $();
-        for(var $1 : $postDfs($inset($root), $ -> $.exclude($$ -> {
+        for(var $1 : postDfs$(inset$($root), $ -> $.exclude($$ -> {
             var o = $$.raw();
             return "#".equals(o) || "@".equals(o);
         })).eachIn()) {
@@ -63,7 +63,6 @@ public class ObjectFactory {
             }
         }
         $references.alter($externalReferences);
-        $inferredTypes.print();
         return factoryVendor($root);
     }
 

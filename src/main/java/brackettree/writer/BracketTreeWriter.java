@@ -187,7 +187,7 @@ public class BracketTreeWriter {
 
         var $ = designer.load(o);
 
-        String str = $describe($, root, this::stringify, compact);
+        String str = describe$($, root, this::stringify, compact);
 
         writer.write(str);
 

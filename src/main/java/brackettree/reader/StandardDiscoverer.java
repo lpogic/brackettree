@@ -11,7 +11,7 @@ import java.util.List;
 public class StandardDiscoverer {
 
     public static Subject getAll() {
-        return $arm(Boolean.class, (Action) StandardDiscoverer::discoverBoolean).
+        return arm$(Boolean.class, (Action) StandardDiscoverer::discoverBoolean).
                 arm(Integer.class, (Action) StandardDiscoverer::discoverInteger).
                 arm(Double.class, (Action) StandardDiscoverer::discoverDouble).
                 arm(Float.class, (Action) StandardDiscoverer::discoverFloat).
