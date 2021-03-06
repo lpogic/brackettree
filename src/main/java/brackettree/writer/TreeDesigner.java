@@ -119,16 +119,16 @@ public class TreeDesigner {
 
     public TreeDesigner() {
         setDecomposers(StandardInterpreter.getAllSupported());
-        $classAliases.alter(
-                arm$(Integer.class, "int").
-                arm(int.class, "int").
-                arm(Double.class, "double").
-                arm(double.class, "double").
-                arm(Float.class, "float").
-                arm(float.class, "float").
-                arm(List.class, "list").
-                arm(SolidSubject.class, "subject").
-                arm(String.class, "string")
+        $classAliases.alter(Suite.
+                put(Integer.class, "int").
+                put(int.class, "int").
+                put(Double.class, "double").
+                put(double.class, "double").
+                put(Float.class, "float").
+                put(float.class, "float").
+                put(List.class, "list").
+                put(SolidSubject.class, "subject").
+                put(String.class, "string")
         );
         elementaryDecomposer = o -> {
             if(o == null) return $("null");
@@ -155,11 +155,11 @@ public class TreeDesigner {
     }
 
     public void setDecomposer(Class<?> type, Action decomposer) {
-        $decomposers.arm(type, decomposer);
+        $decomposers.put(type, decomposer);
     }
 
     public<T> void setDecomposer(Class<T> type, BiConsumer<T, TreeDesigner> decomposer) {
-        $decomposers.arm(type, decomposer);
+        $decomposers.put(type, decomposer);
     }
 
     public void setDecomposers(Series $decomposers) {

@@ -11,15 +11,16 @@ import java.util.List;
 public class StandardDiscoverer {
 
     public static Subject getAll() {
-        return arm$(Boolean.class, (Action) StandardDiscoverer::discoverBoolean).
-                arm(Integer.class, (Action) StandardDiscoverer::discoverInteger).
-                arm(Double.class, (Action) StandardDiscoverer::discoverDouble).
-                arm(Float.class, (Action) StandardDiscoverer::discoverFloat).
-                arm(Subject.class, (Action) StandardDiscoverer::discoverSubject).
-                arm(String.class, (Action) StandardDiscoverer::discoverString).
-                arm(Object.class, (Action) StandardDiscoverer::discoverObject).
-                arm(List.class, (Action) StandardDiscoverer::discoverList)
-                ;
+        return join$(
+                $(Boolean.class, (Action) StandardDiscoverer::discoverBoolean),
+                $(Integer.class, (Action) StandardDiscoverer::discoverInteger),
+                $(Double.class, (Action) StandardDiscoverer::discoverDouble),
+                $(Float.class, (Action) StandardDiscoverer::discoverFloat),
+                $(Subject.class, (Action) StandardDiscoverer::discoverSubject),
+                $(String.class, (Action) StandardDiscoverer::discoverString),
+                $(Object.class, (Action) StandardDiscoverer::discoverObject),
+                $(List.class, (Action) StandardDiscoverer::discoverList)
+        );
     }
 
     public static Subject discoverBoolean(Subject $) {

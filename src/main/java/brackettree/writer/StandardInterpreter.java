@@ -14,13 +14,14 @@ import java.util.*;
 public class StandardInterpreter {
 
     public static Subject getAllSupported() {
-        return arm$(Integer.class, (Action)StandardInterpreter::interpretPrimitive).
-                arm(ArrayList.class, (Action)StandardInterpreter::interpretCollection).
-                arm(HashSet.class, (Action)StandardInterpreter::interpretCollection).
-                arm(HashMap.class, (Action)StandardInterpreter::interpretMap).
-                arm(File.class, (Action)StandardInterpreter::interpretFile).
-                arm(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
-                ;
+        return join$(
+                $(Integer.class, (Action)StandardInterpreter::interpretPrimitive),
+                $(ArrayList.class, (Action)StandardInterpreter::interpretCollection),
+                $(HashSet.class, (Action)StandardInterpreter::interpretCollection),
+                $(HashMap.class, (Action)StandardInterpreter::interpretMap),
+                $(File.class, (Action)StandardInterpreter::interpretFile),
+                $(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
+        );
     }
 
     public static Subject interpret(Interpreted interpreted) {
@@ -66,7 +67,7 @@ public class StandardInterpreter {
     public static Subject interpretMap(Subject $in) {
         Map<?, ?> map = $in.asExpected();
         var $ = $();
-        map.forEach($::arm);
+        map.forEach($::put);
         return $;
     }
 

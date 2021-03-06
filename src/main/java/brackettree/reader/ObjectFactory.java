@@ -2,6 +2,7 @@ package brackettree.reader;
 
 import brackettree.Discovered;
 import suite.suite.Subject;
+import suite.suite.Suite;
 import suite.suite.Vendor;
 import suite.suite.action.Action;
 import suite.suite.util.Series;
@@ -28,13 +29,13 @@ public class ObjectFactory {
     public ObjectFactory(Series $composers) {
         setComposers(StandardDiscoverer.getAll());
         setComposers($composers);
-        $classAliases.alter(
-                arm$("int", Integer.class).
-                arm("double", Double.class).
-                arm("float", Float.class).
-                arm("list", List.class).
-                arm("subject", Subject.class).
-                arm("string", String.class)
+        $classAliases.alter(Suite.
+                put("int", Integer.class).
+                put("double", Double.class).
+                put("float", Float.class).
+                put("list", List.class).
+                put("subject", Subject.class).
+                put("string", String.class)
         );
         elementaryComposer = str -> $();
     }
@@ -69,7 +70,7 @@ public class ObjectFactory {
     public void setComposition(String ref, Object param) {
         if(ref.startsWith("#")) ref = ref.substring(1);
         var $s = $();
-        $externalReferences.arm(ref, $s);
+        $externalReferences.put(ref, $s);
         $compositions.in($s).set(param);
     }
 
@@ -158,7 +159,7 @@ public class ObjectFactory {
             }
             type = $typeTree.is(Class.class) ? $typeTree.asExpected() : componentType.arrayType();
             if($inferredTypes.absent($)) {
-                $inferredTypes.arm($, type);
+                $inferredTypes.put($, type);
             }
         }
         return type;
