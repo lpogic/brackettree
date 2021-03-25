@@ -1,17 +1,4 @@
 rootProject.name = 'brackettree'
 
-sourceControl {
-
-//    OFFLINE
-
-    gitRepository(new URI("C://Users/1/Desktop/PRO/PRO_Java/suite")) {
-        producesModule("lpo:suite")
-    }
-
-//    ONLINE
-
-//    gitRepository(new URI("https://github.com/lpogic/suite.git")) {
-//        producesModule("lpo:suite")
-//    }
-}
-
+include ':suite'
+project(':suite').projectDir = new File("C://Users/1/Desktop/PRO/PRO_Java/suite")
