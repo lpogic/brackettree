@@ -14,7 +14,7 @@ import java.util.*;
 public class StandardInterpreter {
 
     public static Subject getAllSupported() {
-        return join$(
+        return $$(
                 $(Integer.class, (Action)StandardInterpreter::interpretPrimitive),
                 $(ArrayList.class, (Action)StandardInterpreter::interpretCollection),
                 $(HashSet.class, (Action)StandardInterpreter::interpretCollection),

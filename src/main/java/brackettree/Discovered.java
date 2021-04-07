@@ -4,7 +4,7 @@ import brackettree.reader.StandardDiscoverer;
 import suite.suite.Subject;
 
 public interface Discovered {
-    default void discover(Subject sub) {
+    default void set(Subject sub) {
         StandardDiscoverer.discover(this, sub);
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 public class StandardDiscoverer {
 
     public static Subject getAll() {
-        return join$(
+        return $$(
                 $(Boolean.class, (Action) StandardDiscoverer::discoverBoolean),
                 $(Integer.class, (Action) StandardDiscoverer::discoverInteger),
                 $(Double.class, (Action) StandardDiscoverer::discoverDouble),

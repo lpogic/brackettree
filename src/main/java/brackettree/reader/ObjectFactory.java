@@ -43,7 +43,7 @@ public class ObjectFactory {
     public FactoryVendor load(Subject $root) {
         $references = $();
         $inferredTypes = $();
-        for(var $1 : postDfs$(inset$($root), $ -> $.exclude($$ -> {
+        for(var $1 : postDfs$(in$($root), $ -> $.exclude($$ -> {
             var o = $$.raw();
             return "#".equals(o) || "@".equals(o);
         })).eachIn()) {
@@ -244,7 +244,7 @@ public class ObjectFactory {
                 Constructor<?> constructor = type.getDeclaredConstructor();
                 Discovered reformable = (Discovered)constructor.newInstance();
                 $compositions.in($).set(reformable);
-                reformable.discover(factoryVendorRoot($));
+                reformable.set(factoryVendorRoot($));
                 return $(reformable);
             } catch (NoSuchMethodException | IllegalAccessException |
                     InstantiationException | InvocationTargetException ignored) {
