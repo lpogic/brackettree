@@ -2,9 +2,10 @@ package brackettree.reader;
 
 import suite.processor.IntProcessor;
 import suite.suite.Subject;
-import static suite.suite.$uite.*;
 
 import java.util.Stack;
+
+import static suite.suite.$uite.set$;
 
 public class BracketTreeProcessor implements IntProcessor {
 
@@ -37,7 +38,7 @@ public class BracketTreeProcessor implements IntProcessor {
     @Override
     public void getReady() {
         branch = new Stack<>();
-        $work = $();
+        $work = set$();
         state = State.BEFORE;
         primaryBuilder = new StringBuilder();
         secondaryBuilder = new StringBuilder();
@@ -67,15 +68,15 @@ public class BracketTreeProcessor implements IntProcessor {
                 break;
             case TREE:
                 if (i == extendSign) {
-                    Subject newWork;
+                    Subject $newWork;
                     appendSecondaryBuilder(primaryBuilder.toString().trim() ,true);
                     if(secondaryBuilder != null) {
-                        newWork = $work.in(secondaryBuilder.toString()).set();
+                        $newWork = $work.in(secondaryBuilder.toString()).set();
                     } else {
-                        $work.inset(newWork = $());
+                        $work.inset($newWork = set$());
                     }
                     branch.add($work);
-                    $work = newWork;
+                    $work = $newWork;
                     primaryBuilder = new StringBuilder();
                     secondaryBuilder = null;
                  } else if (i == closeSign) {

@@ -1,7 +1,7 @@
 package brackettree.reader;
 
+
 import suite.suite.Subject;
-import static suite.suite.$uite.*;
 import suite.suite.action.Action;
 
 import java.io.*;
@@ -10,6 +10,8 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static suite.suite.$uite.set$;
 
 public class BracketTreeReader {
 
@@ -78,7 +80,7 @@ public class BracketTreeReader {
             return load(file);
         } catch (Exception e) {
             e.printStackTrace();
-            return $();
+            return set$();
         }
     }
 
@@ -91,7 +93,7 @@ public class BracketTreeReader {
             return load(url);
         } catch (Exception e) {
             e.printStackTrace();
-            return $();
+            return set$();
         }
     }
 
@@ -105,7 +107,7 @@ public class BracketTreeReader {
             return load(inputStream);
         } catch (Exception e) {
             e.printStackTrace();
-            return $();
+            return set$();
         }
     }
 

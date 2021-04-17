@@ -109,13 +109,13 @@ public class TreeDesigner {
     static final Xray idXray = new SpecialXray("#");
     static final Xray classXray = new SpecialXray("@");
 
-    Subject $refs = $();
-    Subject $decompositions = $();
+    Subject $refs = set$();
+    Subject $decompositions = set$();
 
-    Subject $decomposers = $();
+    Subject $decomposers = set$();
     Function<Object, Subject> elementaryDecomposer;
     boolean attachingTypes;
-    Subject $classAliases = $();
+    Subject $classAliases = set$();
 
     public TreeDesigner() {
         setDecomposers(StandardInterpreter.getAllSupported());
@@ -131,13 +131,13 @@ public class TreeDesigner {
                 put(String.class, "string")
         );
         elementaryDecomposer = o -> {
-            if(o == null) return $("null");
-            if(o instanceof String) return $(o);
-            if(o instanceof Integer) return $(o.toString());
-            if(o instanceof Double) return $(o.toString());
-            if(o instanceof Float) return $(o.toString());
-            if(o instanceof Boolean) return $(o.toString());
-            return $();
+            if(o == null) return set$("null");
+            if(o instanceof String) return set$(o);
+            if(o instanceof Integer) return set$(o.toString());
+            if(o instanceof Double) return set$(o.toString());
+            if(o instanceof Float) return set$(o.toString());
+            if(o instanceof Boolean) return set$(o.toString());
+            return set$();
         };
         attachingTypes = true;
     }
@@ -177,11 +177,11 @@ public class TreeDesigner {
     }
 
     public Subject load(Object o) {
-        $refs = $();
+        $refs = set$();
         var xray = xray(o);
-        var $xRoot = $(xray);
+        var $xRoot = set$(xray);
         int id = 0;
-        for(var $i : preDfs$(in$($xRoot)).eachIn()) {
+        for(var $i : preDfs$(list$($xRoot)).eachIn()) {
             for(var $i1 : $i) {
                 if($i1.is(ObjectXray.class)) {
                     ObjectXray x = $i1.asExpected();
@@ -193,7 +193,7 @@ public class TreeDesigner {
                             x.refId = "" + id++;
                             var $r = $refs.in(x).get();
                             if($i.size() == 1 && $i1.in().absent()) {
-                                $r.aimedInset($r.first().raw(), idXray, $(new StringXray(x.refId)));
+                                $r.aimedInset($r.first().raw(), idXray, set$(new StringXray(x.refId)));
                                 $i.unset().alter($r);
                             } else {
                                 $i.shift(x, new SpecialXray("##" + x.refId));
@@ -221,7 +221,7 @@ public class TreeDesigner {
         if(xray.usages++ < 1) {
             var $ = decompose(o);
             $refs.inset(xray, $);
-            for(var $i : preDfs$(in$($)).eachIn()) {
+            for(var $i : preDfs$(list$($)).eachIn()) {
                 for(var i : $i.eachRaw()) {
                     $i.shift(i, xray(i));
                 }
@@ -242,7 +242,7 @@ public class TreeDesigner {
             if ($decomposer.is(Action.class)) {
 
                 Action decomposer = $decomposer.asExpected();
-                var $r = decomposer.play($(o));
+                var $r = decomposer.play(set$(o));
                 if(isAttachingTypes()) attachType($r, type);
                 $decompositions.inset(o, $r);
                 return $r;
@@ -262,7 +262,7 @@ public class TreeDesigner {
                 if(method.trySetAccessible()) {
                     int modifiers = method.getModifiers();
                     if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
-                        return (Subject)method.invoke(null, $(o), this);
+                        return (Subject)method.invoke(null, set$(o), this);
                     }
                 }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
@@ -271,7 +271,7 @@ public class TreeDesigner {
                 if(method.trySetAccessible()) {
                     int modifiers = method.getModifiers();
                     if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
-                        var $r = (Subject)method.invoke(null, $(o));
+                        var $r = (Subject)method.invoke(null, set$(o));
                         if(attachingTypes) attachType($r, type);
                         $decompositions.inset(o, $r);
                         return $r;
@@ -286,7 +286,7 @@ public class TreeDesigner {
             }
         }
         System.err.println("Can't decompose " + o);
-        return $();
+        return set$();
     }
 
     void attachType(Subject $, Class<?> type) {
@@ -294,7 +294,7 @@ public class TreeDesigner {
     }
 
     Subject wrapType(Class<?> type) {
-        Subject $wrappedType = $();
+        Subject $wrappedType = set$();
         var $1 = $classAliases.in(type).get();
         if($1.present()) $wrappedType.set(new StringXray($1.asExpected()));
         else {
@@ -309,7 +309,7 @@ public class TreeDesigner {
 
     Subject interpretArray(Object array) {
         Class<?> type = array.getClass().getComponentType();
-        var $ = $();
+        var $ = set$();
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {

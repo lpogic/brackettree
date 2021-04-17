@@ -1,6 +1,7 @@
 package brackettree.reader;
 
 import brackettree.Discovered;
+
 import suite.suite.Subject;
 import suite.suite.Suite;
 import suite.suite.Vendor;
@@ -16,14 +17,14 @@ import static suite.suite.$uite.*;
 
 public class ObjectFactory {
 
-    Subject $references = $();
-    Subject $inferredTypes = $();
+    Subject $references = set$();
+    Subject $inferredTypes = set$();
 
-    Subject $externalReferences = $();
+    Subject $externalReferences = set$();
 
-    Subject $compositions = $();
-    Subject $composers = $();
-    Subject $classAliases = $();
+    Subject $compositions = set$();
+    Subject $composers = set$();
+    Subject $classAliases = set$();
     Function<String, Subject> elementaryComposer;
 
     public ObjectFactory(Series $composers) {
@@ -37,13 +38,13 @@ public class ObjectFactory {
                 put("subject", Subject.class).
                 put("string", String.class)
         );
-        elementaryComposer = str -> $();
+        elementaryComposer = str -> set$();
     }
 
     public FactoryVendor load(Subject $root) {
-        $references = $();
-        $inferredTypes = $();
-        for(var $1 : postDfs$(in$($root), $ -> $.exclude($$ -> {
+        $references = set$();
+        $inferredTypes = set$();
+        for(var $1 : postDfs$(list$($root), $ -> $.exclude($$ -> {
             var o = $$.raw();
             return "#".equals(o) || "@".equals(o);
         })).eachIn()) {
@@ -69,7 +70,7 @@ public class ObjectFactory {
 
     public void setComposition(String ref, Object param) {
         if(ref.startsWith("#")) ref = ref.substring(1);
-        var $s = $();
+        var $s = set$();
         $externalReferences.put(ref, $s);
         $compositions.in($s).set(param);
     }
@@ -144,7 +145,7 @@ public class ObjectFactory {
             if($.is(String.class)) {
                 var $type = findType($.asString());
                 if($type.present()) return $.shift($type.raw());
-                else return $();
+                else return set$();
             } else return $;
         });
         inferTypeRq(Series.of($root), $typeTree);
@@ -171,12 +172,12 @@ public class ObjectFactory {
         }
 
         try {
-            return $(Class.forName(type));
+            return set$(Class.forName(type));
         } catch (ClassNotFoundException e) {
             System.err.println("ObjectFactory: class '" + type + "' not found");
         }
 
-        return $();
+        return set$();
     }
 
     Subject compose(Subject $, Class<?> type) {
@@ -245,14 +246,14 @@ public class ObjectFactory {
                 Discovered reformable = (Discovered)constructor.newInstance();
                 $compositions.in($).set(reformable);
                 reformable.set(factoryVendorRoot($));
-                return $(reformable);
+                return set$(reformable);
             } catch (NoSuchMethodException | IllegalAccessException |
                     InstantiationException | InvocationTargetException ignored) {
                 System.err.println("Can't create object. Check access modifiers");
             }
         }
 
-        return $();
+        return set$();
     }
 
     Subject composeArray(Subject $, Class<?> componentType) {
@@ -261,7 +262,7 @@ public class ObjectFactory {
         for(var $up : $.eachIn()) {
             a[i++] = $up.asExpected();
         }
-        return $((Object)a);
+        return set$((Object)a);
     }
 
     FactoryVendorRoot factoryVendorRoot(Subject $sub) {
