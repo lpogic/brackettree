@@ -6,12 +6,6 @@ plugins {
 group 'lpo'
 version '1.0-SNAPSHOT'
 
-plugins.withType(JavaPlugin).configureEach {
-    java {
-        modularity.inferModulePath = true
-    }
-}
-
 repositories {
     mavenCentral()
 }

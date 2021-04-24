@@ -1,13 +1,21 @@
 package brackettree.reader;
 
-import brackettree.Discovered;
+import brackettree.Interpreted;
 
+import brackettree.xray.AutoXray;
+import brackettree.xray.ObjectXray;
+import brackettree.xray.StringXray;
+import brackettree.xray.formal.BinaryXray;
 import suite.suite.Subject;
 import suite.suite.Suite;
 import suite.suite.Vendor;
 import suite.suite.action.Action;
 import suite.suite.util.Series;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.lang.reflect.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -36,7 +44,8 @@ public class ObjectFactory {
                 put("float", Float.class).
                 put("list", List.class).
                 put("subject", Subject.class).
-                put("string", String.class)
+                put("string", String.class).
+                put("serial", Serializable.class)
         );
         elementaryComposer = str -> set$();
     }
@@ -239,17 +248,39 @@ public class ObjectFactory {
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
 
-        if(Discovered.class.isAssignableFrom(type)) {
+        if(Interpreted.class.isAssignableFrom(type)) {
 
             try {
                 Constructor<?> constructor = type.getDeclaredConstructor();
-                Discovered reformable = (Discovered)constructor.newInstance();
+                Interpreted reformable = (Interpreted)constructor.newInstance();
                 $compositions.in($).set(reformable);
-                reformable.set(factoryVendorRoot($));
+                reformable.discover(factoryVendorRoot($));
                 return set$(reformable);
             } catch (NoSuchMethodException | IllegalAccessException |
-                    InstantiationException | InvocationTargetException ignored) {
+                    InstantiationException | InvocationTargetException e) {
                 System.err.println("Can't create object. Check access modifiers");
+                e.printStackTrace();
+            }
+        }
+
+        if(Serializable.class.isAssignableFrom(type)) {
+            try(var ois = new ObjectInputStream(new ByteArrayInputStream(BinaryXray.utf8DecodePrintable($.asString()))) {
+                {
+                    enableResolveObject(true);
+                }
+
+                @Override
+                protected Object resolveObject(Object obj) {
+                    if(obj instanceof AutoXray) return new Suite.Auto();
+                    if(obj instanceof StringXray xray) return get(Suite.set(xray.getValue()), Object.class).raw();
+                    if(obj instanceof ObjectXray xray) return get(Suite.set("#" + xray.getRefId()), Object.class).raw();
+                    return obj;
+                }
+            }) {
+                return Suite.set(ois.readObject());
+            } catch (IOException | ClassNotFoundException ignored) {
+//                ignored.printStackTrace();
+                System.err.println("Problem with Serializable");
             }
         }
 

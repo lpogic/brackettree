@@ -1,5 +1,7 @@
 package brackettree.writer;
 
+import brackettree.xray.Xray;
+import brackettree.xray.formal.BinaryXray;
 import suite.suite.Subject;
 import static suite.suite.$uite.*;
 import suite.suite.action.Action;
@@ -8,6 +10,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.function.Function;
 
 public class BracketTreeWriter {
@@ -15,9 +18,9 @@ public class BracketTreeWriter {
     private TreeDesigner designer;
     private boolean compact;
     private boolean root;
-    private int extendSign = '[';
-    private int closeSign = ']';
-    private int fenceSign = '"';
+    private String extendSign = "[";
+    private String closeSign = "]";
+    private String fenceSign = "\"";
 
 
     public BracketTreeWriter() {
@@ -75,27 +78,27 @@ public class BracketTreeWriter {
     }
 
     public int getExtendSign() {
-        return extendSign;
+        return extendSign.codePointAt(0);
     }
 
     public void setExtendSign(int extendSign) {
-        this.extendSign = extendSign;
+        this.extendSign = new String(new int[]{extendSign}, 0, 1);
     }
 
     public int getCloseSign() {
-        return closeSign;
+        return closeSign.codePointAt(0);
     }
 
     public void setCloseSign(int closeSign) {
-        this.closeSign = closeSign;
+        this.closeSign = new String(new int[]{closeSign}, 0, 1);;
     }
 
     public int getFenceSign() {
-        return fenceSign;
+        return fenceSign.codePointAt(0);
     }
 
     public void setFenceSign(int fenceSign) {
-        this.fenceSign = fenceSign;
+        this.fenceSign = new String(new int[]{fenceSign}, 0, 1);;
     }
 
     public BracketTreeWriter withDecomposer(Class<?> type, Action decomposer) {
@@ -196,14 +199,14 @@ public class BracketTreeWriter {
     }
 
     public String stringify(Object object) {
-        return ((TreeDesigner.Xray)object).toString(this);
+        return ((Xray)object).toString(this);
     }
 
     public String escaped(String str) {
         if(str.startsWith("@") || str.startsWith("#") || str.trim().length() < str.length() ||
-                str.contains("" + extendSign) || str.contains("" + closeSign)) {
+                str.contains(extendSign) || str.contains(closeSign)) {
             int i = 0;
-            while(str.contains(fenceSign + "^".repeat(i)))++i;
+            while(str.contains(fenceSign + "^".repeat(i))) ++i;
             return "^".repeat(i) + "\"" + str + "\"" + "^".repeat(i);
         }
         return str;

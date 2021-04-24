@@ -1,9 +1,11 @@
 package brackettree.reader;
 
-import brackettree.Discovered;
+import brackettree.Interpreted;
 
 import suite.suite.Subject;
 import static suite.suite.$uite.*;
+
+import suite.suite.Suite;
 import suite.suite.action.Action;
 
 import java.lang.reflect.Field;
@@ -54,14 +56,26 @@ public class StandardDiscoverer {
 
     public static Subject discoverString(Subject $) {
         String str = $.as(String.class, "");
-        boolean cutFront = str.startsWith("`"), cutBack = str.endsWith("`");
+        boolean cutFront = str.startsWith("'"), cutBack = str.endsWith("'");
         return set$(cutFront ? cutBack ? str.substring(1, str.length() - 1) : str.substring(1) :
                 cutBack ? str.substring(0, str.length() - 1) : str);
     }
 
     public static Subject discoverObject(Subject $) {
         if($.absent()) return set$();
-        if($.size() == 1 && $.in().absent() && $.is(String.class)) return discoverString($);
+        if($.size() == 1 && $.in().absent() && $.is(String.class)) {
+//            return discoverString($); // skip elementary
+
+            String str = $.as(String.class);
+            boolean cutFront = str.startsWith("'"), cutBack = str.endsWith("'");
+            if(cutFront) {
+                return set$(cutBack ? str.substring(1, str.length() - 1) : str.substring(1));
+            } else if(Character.isDigit(str.codePointAt(0))) {
+                return set$(Integer.parseInt(str));
+            }
+
+
+        }
 
         return discoverSubject($);
     }
@@ -73,14 +87,14 @@ public class StandardDiscoverer {
             if(o instanceof Subject) $r.inset($1.raw(), (Subject) o);
             else $r.inset($1.raw(), set$(o));
         }
-        return set$($r);
+        return Suite.set($r);
     }
 
     public static Subject discoverList(Subject $) {
         return set$($.eachIn().eachRaw().toList());
     }
 
-    public static void discover(Discovered reformable, Subject $) {
+    public static void discover(Interpreted reformable, Subject $) {
         for(Class<?> aClass = reformable.getClass(); aClass != Object.class; aClass = aClass.getSuperclass()) {
             try {
                 Field[] fields = aClass.getDeclaredFields();
