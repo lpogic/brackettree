@@ -1,6 +1,7 @@
-package brackettree.xray;
+package brackettree.xray.formal;
 
 import brackettree.writer.BracketTreeWriter;
+import brackettree.xray.Xray;
 
 import java.io.IOException;
 import java.io.ObjectInput;

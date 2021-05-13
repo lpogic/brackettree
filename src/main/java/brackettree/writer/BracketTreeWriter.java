@@ -1,16 +1,14 @@
 package brackettree.writer;
 
 import brackettree.xray.Xray;
-import brackettree.xray.formal.BinaryXray;
 import suite.suite.Subject;
-import static suite.suite.$uite.*;
+import static suite.suite.$.*;
 import suite.suite.action.Action;
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.function.Function;
 
 public class BracketTreeWriter {

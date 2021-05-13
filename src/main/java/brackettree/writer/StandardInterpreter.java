@@ -4,7 +4,7 @@ import brackettree.Interpreted;
 
 import suite.suite.SolidSubject;
 import suite.suite.Subject;
-import static suite.suite.$uite.*;
+import static suite.suite.$.*;
 import suite.suite.action.Action;
 
 import java.io.File;

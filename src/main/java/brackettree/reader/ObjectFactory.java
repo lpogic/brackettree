@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static suite.suite.$uite.*;
+import static suite.suite.$.*;
 
 public class ObjectFactory {
 
@@ -36,7 +36,6 @@ public class ObjectFactory {
     Function<String, Subject> elementaryComposer;
 
     public ObjectFactory(Series $composers) {
-        setComposers(StandardDiscoverer.getAll());
         setComposers($composers);
         $classAliases.alter(Suite.
                 put("int", Integer.class).
@@ -80,7 +79,7 @@ public class ObjectFactory {
     public void setComposition(String ref, Object param) {
         if(ref.startsWith("#")) ref = ref.substring(1);
         var $s = set$();
-        $externalReferences.put(ref, $s);
+        $externalReferences.inset(ref, $s);
         $compositions.in($s).set(param);
     }
 
@@ -233,7 +232,10 @@ public class ObjectFactory {
                     }
                 }
             }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+        } catch(NoSuchMethodException ignored) {
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
 
         try {
             Method method = type.getMethod("compose", Subject.class, ObjectFactory.class);
@@ -246,7 +248,10 @@ public class ObjectFactory {
                     }
                 }
             }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+        } catch(NoSuchMethodException ignored) {
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
 
         if(Interpreted.class.isAssignableFrom(type)) {
 
@@ -256,10 +261,9 @@ public class ObjectFactory {
                 $compositions.in($).set(reformable);
                 reformable.discover(factoryVendorRoot($));
                 return set$(reformable);
-            } catch (NoSuchMethodException | IllegalAccessException |
-                    InstantiationException | InvocationTargetException e) {
-                System.err.println("Can't create object. Check access modifiers");
-                e.printStackTrace();
+            } catch(NoSuchMethodException ignored) {
+            } catch (Exception exception) {
+                exception.printStackTrace();
             }
         }
 

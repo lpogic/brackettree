@@ -3,9 +3,10 @@ package brackettree.writer;
 import brackettree.Interpreted;
 import brackettree.xray.*;
 import brackettree.xray.formal.BinaryXray;
+import brackettree.xray.formal.SpecialXray;
 import suite.suite.SolidSubject;
 import suite.suite.Subject;
-import static suite.suite.$uite.*;
+import static suite.suite.$.*;
 
 import suite.suite.Suite;
 import suite.suite.action.Action;

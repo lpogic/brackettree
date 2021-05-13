@@ -3,13 +3,13 @@ package brackettree.reader;
 import brackettree.Interpreted;
 
 import suite.suite.Subject;
-import static suite.suite.$uite.*;
+import static suite.suite.$.*;
 
 import suite.suite.Suite;
 import suite.suite.action.Action;
 
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.ArrayList;
 
 public class StandardDiscoverer {
 
@@ -21,8 +21,8 @@ public class StandardDiscoverer {
                 arm$(Float.class, (Action) StandardDiscoverer::discoverFloat),
                 arm$(Subject.class, (Action) StandardDiscoverer::discoverSubject),
                 arm$(String.class, (Action) StandardDiscoverer::discoverString),
-                arm$(Object.class, (Action) StandardDiscoverer::discoverObject),
-                arm$(List.class, (Action) StandardDiscoverer::discoverList)
+                arm$(Object.class, (Action) StandardDiscoverer::discoverObject), // primitive discoverer
+                arm$(ArrayList.class, (Action) StandardDiscoverer::discoverList)
         );
     }
 
@@ -37,19 +37,19 @@ public class StandardDiscoverer {
     }
 
     public static Subject discoverInteger(Subject $) {
-        if($.is(String.class)) return set$(Integer.parseInt($.as(String.class)));
+        if($.is(String.class)) return set$(Integer.valueOf($.as(String.class)));
         if($.is(Number.class)) return set$($.as(Number.class).intValue());
         return set$();
     }
 
     public static Subject discoverDouble(Subject $) {
-        if($.is(String.class)) return set$(Double.parseDouble($.as(String.class)));
+        if($.is(String.class)) return set$(Double.valueOf($.as(String.class)));
         if($.is(Number.class)) return set$($.as(Number.class).doubleValue());
         return set$();
     }
 
     public static Subject discoverFloat(Subject $) {
-        if($.is(String.class)) return set$(Float.parseFloat($.as(String.class)));
+        if($.is(String.class)) return set$(Float.valueOf($.as(String.class)));
         if($.is(Number.class)) return set$($.as(Number.class).floatValue());
         return set$();
     }
@@ -71,7 +71,7 @@ public class StandardDiscoverer {
             if(cutFront) {
                 return set$(cutBack ? str.substring(1, str.length() - 1) : str.substring(1));
             } else if(Character.isDigit(str.codePointAt(0))) {
-                return set$(Integer.parseInt(str));
+                return set$(Integer.valueOf(str));
             }
 
 
@@ -94,6 +94,13 @@ public class StandardDiscoverer {
         return set$($.eachIn().eachRaw().toList());
     }
 
+    static Subject $boxer = set$(
+            arm$(int.class, Integer.class),
+            arm$(float.class, Float.class),
+            arm$(double.class, Double.class),
+            arm$(boolean.class, Boolean.class)
+    );
+
     public static void discover(Interpreted reformable, Subject $) {
         for(Class<?> aClass = reformable.getClass(); aClass != Object.class; aClass = aClass.getSuperclass()) {
             try {
@@ -103,11 +110,11 @@ public class StandardDiscoverer {
                         field.setAccessible(true);
                         Class<?> fieldType = field.getType();
                         if(fieldType.isPrimitive()) {
-                            if(fieldType.equals(int.class)) {
-                                field.setInt(reformable, $.in(field.getName()).as(Integer.class, 0));
-                            }
+                            Class<Object> type = $boxer.in(fieldType).asExpected();
+                            field.set(reformable, $.in(field.getName()).as(type));
                         } else {
-                            field.set(reformable, $.in(field.getName()).as(fieldType, null));
+                            var o = $.in(field.getName()).as(fieldType, null);
+                            field.set(reformable, o);
                         }
                     }
                 }

@@ -5,7 +5,7 @@ import suite.suite.Subject;
 
 import java.util.Stack;
 
-import static suite.suite.$uite.set$;
+import static suite.suite.$.set$;
 
 public class BracketTreeProcessor implements IntProcessor {
 
