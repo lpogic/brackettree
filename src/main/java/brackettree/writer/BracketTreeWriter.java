@@ -2,7 +2,7 @@ package brackettree.writer;
 
 import brackettree.xray.Xray;
 import suite.suite.Subject;
-import static suite.suite.$.*;
+import static suite.suite.$uite.*;
 import suite.suite.action.Action;
 
 import java.io.*;

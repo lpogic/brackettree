@@ -4,9 +4,10 @@ import brackettree.Interpreted;
 import brackettree.xray.*;
 import brackettree.xray.formal.BinaryXray;
 import brackettree.xray.formal.SpecialXray;
+import brackettree.xray.Xray;
 import suite.suite.SolidSubject;
 import suite.suite.Subject;
-import static suite.suite.$.*;
+import static suite.suite.$uite.*;
 
 import suite.suite.Suite;
 import suite.suite.action.Action;
@@ -68,7 +69,7 @@ public class TreeDesigner {
     }
 
     public void setDecomposition(Object o, Subject $) {
-        $decompositions.inset(o, $);
+        $decompositions.inset(new ObjectXray(o), $);
     }
 
     public void setDecomposer(Class<?> type, Action decomposer) {
@@ -103,12 +104,13 @@ public class TreeDesigner {
         $xRoot = set$();
         var xray = xray(o);
         $xRoot.aimedSet($xRoot.first().raw(), xray);
-        for(var $i : preDfs$(list$($xRoot)).eachIn()) {
+        for(var $i : preDfs$(add$($xRoot)).eachIn()) {
             for(var $i1 : $i) {
                 if($i1.is(ObjectXray.class)) {
                     ObjectXray x = $i1.asExpected();
+                    boolean isLeaf = $i.size() == 1 && $i1.in().absent();
 
-                    if (x.getUsages() < 2 && $i.size() == 1 && $i1.in().absent()) {
+                    if (x.getUsages() < 2 && isLeaf) {
                         $i.unset().alter($refs.in(x));
                         $printedObjectRefs.set(x);
                     } else {
@@ -116,14 +118,14 @@ public class TreeDesigner {
                             $printedObjectRefs.set(x);
                             if(x.getRefId() == null) x.setRefId("" + id++);
                             var $r = $refs.in(x).get();
-                            if($i.size() == 1 && $i1.in().absent()) {
+                            if(isLeaf) {
                                 $r.aimedInset($r.first().raw(), idXray, set$(new StringXray(x.getRefId())));
                                 $i.unset().alter($r);
                             } else {
                                 $i.shift(x, new SpecialXray("##" + x.getRefId()));
                                 $xRoot.inset(new SpecialXray("#" + x.getRefId()), $r);
                             }
-                        } else if(!($i.size() == 1 && $i1.in().absent())) {
+                        } else if(!isLeaf) {
                             $i.shift(x, new SpecialXray("##" + x.getRefId()));
                         }
                     }
@@ -138,14 +140,14 @@ public class TreeDesigner {
         if(o instanceof Xray) return (Xray) o;
         var $prim = elementaryDecomposer.apply(o);
         if($prim.present()) return new StringXray($prim.asExpected());
-        if(o instanceof String) return new StringXray($prim.asExpected());
+        if(o instanceof String s) return new StringXray(s);
         if(o instanceof Suite.Auto) return new AutoXray();
 
         ObjectXray xray = $refs.sate(new ObjectXray(o)).asExpected();
         if(xray.use() < 1) {
-            var $ = decompose(o);
+            var $ = decompose(o, xray);
             $refs.inset(xray, $);
-            for(var $i : preDfs$(list$($)).eachIn()) {
+            for(var $i : preDfs$(add$($)).eachIn()) {
                 for(var i : $i.eachRaw()) {
                     $i.shift(i, xray(i));
                 }
@@ -155,9 +157,10 @@ public class TreeDesigner {
         return xray;
     }
 
-    Subject decompose(Object o) {
+    Subject decompose(Object o, Xray xray) {
 
-        if($decompositions.present(o)) return $decompositions.in(o).get();
+        var $decomposition = $decompositions.in(xray).get();
+        if($decomposition.present()) return $decomposition;
 
         Class<?> type = o.getClass();
 
@@ -168,36 +171,36 @@ public class TreeDesigner {
                 Action decomposer = $decomposer.asExpected();
                 var $r = decomposer.play(Suite.set(o));
                 if(isAttachingTypes()) attachType($r, type);
-                $decompositions.inset(o, $r);
+                $decompositions.inset(xray, $r);
                 return $r;
             } else if ($decomposer.is(BiConsumer.class)) {
                 BiConsumer<Object, TreeDesigner> consumer = $decomposer.asExpected();
                 consumer.accept(o, this);
-                return $decompositions.in(o).get();
+                return $decompositions.in(xray).get();
             }
         } else if(type.isArray()) {
             var $r = interpretArray(o);
             if(isAttachingTypes()) attachType($r, type);
-            $decompositions.inset(o, $r);
+            $decompositions.inset(xray, $r);
             return $r;
         } else {
             try {
-                Method method = type.getDeclaredMethod("decompose", Subject.class, TreeDesigner.class);
+                Method method = type.getMethod("decompose", type, TreeDesigner.class);
                 if(method.trySetAccessible()) {
                     int modifiers = method.getModifiers();
                     if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
-                        return (Subject)method.invoke(null, Suite.set(o), this);
+                        return (Subject)method.invoke(null, type.cast(o), this);
                     }
                 }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
             try {
-                Method method = type.getMethod("decompose", Subject.class);
+                Method method = type.getMethod("decompose", type);
                 if(method.trySetAccessible()) {
                     int modifiers = method.getModifiers();
                     if(Subject.class.isAssignableFrom(method.getReturnType()) && Modifier.isStatic(modifiers)) {
-                        var $r = (Subject)method.invoke(null, Suite.set(o));
+                        var $r = (Subject)method.invoke(null, type.cast(o));
                         if(attachingTypes) attachType($r, type);
-                        $decompositions.inset(o, $r);
+                        $decompositions.inset(xray, $r);
                         return $r;
                     }
                 }
@@ -205,7 +208,7 @@ public class TreeDesigner {
             if(o instanceof Interpreted) {
                 var $r = ((Interpreted)o).interpret();
                 if(attachingTypes) attachType($r, type);
-                $decompositions.inset(o, $r);
+                $decompositions.inset(xray, $r);
                 return $r;
             }
             if(o instanceof Serializable) {
@@ -239,7 +242,7 @@ public class TreeDesigner {
                 }
                 $r.aimedSet($r.first().raw(), new BinaryXray(baos.toByteArray()));
                 if(attachingTypes) attachType($r, Serializable.class);
-                $decompositions.inset(o, $r);
+                $decompositions.inset(xray, $r);
                 return $r;
             }
         }

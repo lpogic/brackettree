@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static suite.suite.$.set$;
+import static suite.suite.$uite.set$;
 
 public class BracketTreeReader {
 

@@ -3,7 +3,7 @@ package brackettree.reader;
 import brackettree.Interpreted;
 
 import suite.suite.Subject;
-import static suite.suite.$.*;
+import static suite.suite.$uite.*;
 
 import suite.suite.Suite;
 import suite.suite.action.Action;
@@ -15,14 +15,14 @@ public class StandardDiscoverer {
 
     public static Subject getAll() {
         return set$(
-                arm$(Boolean.class, (Action) StandardDiscoverer::discoverBoolean),
-                arm$(Integer.class, (Action) StandardDiscoverer::discoverInteger),
-                arm$(Double.class, (Action) StandardDiscoverer::discoverDouble),
-                arm$(Float.class, (Action) StandardDiscoverer::discoverFloat),
-                arm$(Subject.class, (Action) StandardDiscoverer::discoverSubject),
-                arm$(String.class, (Action) StandardDiscoverer::discoverString),
-                arm$(Object.class, (Action) StandardDiscoverer::discoverObject), // primitive discoverer
-                arm$(ArrayList.class, (Action) StandardDiscoverer::discoverList)
+                $(Boolean.class, (Action) StandardDiscoverer::discoverBoolean),
+                $(Integer.class, (Action) StandardDiscoverer::discoverInteger),
+                $(Double.class, (Action) StandardDiscoverer::discoverDouble),
+                $(Float.class, (Action) StandardDiscoverer::discoverFloat),
+                $(Subject.class, (Action) StandardDiscoverer::discoverSubject),
+                $(String.class, (Action) StandardDiscoverer::discoverString),
+                $(Object.class, (Action) StandardDiscoverer::discoverObject), // primitive discoverer
+                $(ArrayList.class, (Action) StandardDiscoverer::discoverList)
         );
     }
 
@@ -95,10 +95,10 @@ public class StandardDiscoverer {
     }
 
     static Subject $boxer = set$(
-            arm$(int.class, Integer.class),
-            arm$(float.class, Float.class),
-            arm$(double.class, Double.class),
-            arm$(boolean.class, Boolean.class)
+            $(int.class, Integer.class),
+            $(float.class, Float.class),
+            $(double.class, Double.class),
+            $(boolean.class, Boolean.class)
     );
 
     public static void discover(Interpreted reformable, Subject $) {

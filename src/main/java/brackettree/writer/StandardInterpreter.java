@@ -4,7 +4,7 @@ import brackettree.Interpreted;
 
 import suite.suite.SolidSubject;
 import suite.suite.Subject;
-import static suite.suite.$.*;
+import static suite.suite.$uite.*;
 import suite.suite.action.Action;
 
 import java.io.File;
@@ -16,12 +16,12 @@ public class StandardInterpreter {
 
     public static Subject getAllSupported() {
         return set$(
-                arm$(Integer.class, (Action)StandardInterpreter::interpretPrimitive),
-                arm$(ArrayList.class, (Action)StandardInterpreter::interpretCollection),
-                arm$(HashSet.class, (Action)StandardInterpreter::interpretCollection),
-                arm$(HashMap.class, (Action)StandardInterpreter::interpretMap),
-                arm$(File.class, (Action)StandardInterpreter::interpretFile),
-                arm$(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
+                $(Integer.class, (Action)StandardInterpreter::interpretPrimitive),
+                $(ArrayList.class, (Action)StandardInterpreter::interpretCollection),
+                $(HashSet.class, (Action)StandardInterpreter::interpretCollection),
+                $(HashMap.class, (Action)StandardInterpreter::interpretMap),
+                $(File.class, (Action)StandardInterpreter::interpretFile),
+                $(SolidSubject.class, (Action)StandardInterpreter::interpretSubject)
         );
     }
 

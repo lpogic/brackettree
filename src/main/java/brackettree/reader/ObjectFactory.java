@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static suite.suite.$.*;
+import static suite.suite.$uite.*;
 
 public class ObjectFactory {
 
@@ -52,7 +52,7 @@ public class ObjectFactory {
     public FactoryVendor load(Subject $root) {
         $references = set$();
         $inferredTypes = set$();
-        for(var $1 : postDfs$(list$($root), $ -> $.exclude($$ -> {
+        for(var $1 : postDfs$(add$($root), $ -> $.exclude($$ -> {
             var o = $$.raw();
             return "#".equals(o) || "@".equals(o);
         })).eachIn()) {
