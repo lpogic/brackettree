@@ -37,8 +37,8 @@ public class BracketTreeReader {
         return loadWell(inputStream);
     }
 
-    public Subject parse(String jorg) {
-        InputStream inputStream = new ByteArrayInputStream(jorg.getBytes());
+    public Subject parse(String tree) {
+        InputStream inputStream = new ByteArrayInputStream(tree.getBytes());
         return loadWell(inputStream);
     }
 

@@ -1,10 +1,16 @@
 package brackettree;
 
 import brackettree.reader.BracketTree;
+import brackettree.writer.TreeDesigner;
+import suite.suite.Subject;
 import suite.suite.Suite;
-import suite.suite.util.Sequence;
+import suite.suite.util.Cascade;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import static suite.suite.$uite.*;
 
 public class Main {
 
@@ -32,14 +38,49 @@ public class Main {
         }
     }
 
+    public static class Repo {
+        List<Foo> foos = new ArrayList<>();
+
+        public Repo(Foo ... foos) {
+            this.foos.addAll(Arrays.asList(foos));
+        }
+
+        public static Subject decompose(Repo repo) {
+            var $d = $();
+            var c = new Cascade<>(repo.foos.iterator());
+            $d.add(TreeDesigner.reserve(c.next()));
+            for(var foo : c) {
+                $d.add(foo);
+            }
+            return $d;
+        }
+
+        public static Subject compose(Subject $) {
+            var repo = new Repo();
+            for(var f : $.list().eachAs(Foo.class)) {
+                repo.foos.add(f);
+            }
+            return $(repo);
+        }
+
+        public String toString() {
+            return "Repo{" + foos.toString() + "}";
+        }
+    }
+
     public static void main(String[] args) {
 //        System.out.println(Integer[].class);
 
         var foo = new Foo(5, 6);
-        System.out.println(BracketTree.writer().encode(Suite.inset(foo, Suite.set(foo, "a"))));
-//        System.out.println(BracketTree.writer().encode(new Foo[]{new Foo(1, 2), new Foo(3, 4, foo), foo}));
-//        BracketTree.parse("@[[int]][1][2][3]");
-        System.out.println(BracketTree.parse("@[[int]][1][2][#1][#[1]3]").as(Integer[].class)[3]);
-        int[][] i = new int[][]{{1}, {2, 3}};
+        var repo = new Repo(foo, foo, foo);
+//        System.out.println(BracketTree.encode("text"));
+//        BracketTree.encode(Suite.set(foo, repo));
+        String tree;
+        tree = BracketTree.encode("to jest text");
+        System.out.println(tree);
+        var parsed = BracketTree.parse(tree);
+        String i = /*
+        Subject $ =*/ parsed.asExpected();
+        System.out.println(i);
     }
 }

@@ -20,8 +20,8 @@ public class BracketTree {
         return new BracketTreeReader().read(inputStream);
     }
 
-    public static Subject parse(String jorg) {
-        return new BracketTreeReader().parse(jorg);
+    public static Subject parse(String tree) {
+        return new BracketTreeReader().parse(tree);
     }
 
     public static BracketTreeReader reader() {

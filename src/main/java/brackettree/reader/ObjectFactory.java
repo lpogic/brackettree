@@ -137,7 +137,9 @@ public class ObjectFactory {
     }
 
     boolean isReference(Subject $) {
-        return $.size() == 1 && $.in().absent() && $.as(String.class, "").startsWith("#");
+        if($.size() != 1 || $.in().present()) return false;
+        var str = $.as(String.class, "");
+        return str.startsWith("#") && !str.startsWith("##");
     }
 
     Subject findReferred(Subject $) {
@@ -288,7 +290,11 @@ public class ObjectFactory {
             }
         }
 
-        return set$();
+        if($.present()) {
+            System.err.println("Uncomposable element!");
+            System.err.println(toString$($));
+        }
+        return $();
     }
 
     Subject composeArray(Subject $, Class<?> componentType) {
@@ -304,8 +310,8 @@ public class ObjectFactory {
         for(var $ : $sub) {
             if($.is(String.class)) {
                 String str = $.asExpected();
-                if(str.startsWith("#")) {
-                    $sub.shift(str, get(findReferred($), Object.class).asExpected());
+                if(str.startsWith("##")) {
+                    $sub.shift(str, get(findReferred($(str.substring(1))), Object.class).asExpected());
                 } else {
                     var $prim = elementaryComposer.apply(str);
                     if($prim.present()) $sub.shift(str, $prim.raw());

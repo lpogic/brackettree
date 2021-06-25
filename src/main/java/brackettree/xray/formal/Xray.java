@@ -1,4 +1,4 @@
-package brackettree.xray;
+package brackettree.xray.formal;
 
 import brackettree.writer.BracketTreeWriter;
 

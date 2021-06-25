@@ -1,6 +1,6 @@
 package brackettree.writer;
 
-import brackettree.xray.Xray;
+import brackettree.xray.formal.Xray;
 import suite.suite.Subject;
 import static suite.suite.$uite.*;
 import suite.suite.action.Action;

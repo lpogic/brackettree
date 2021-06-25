@@ -4,7 +4,7 @@ import brackettree.Interpreted;
 import brackettree.xray.*;
 import brackettree.xray.formal.BinaryXray;
 import brackettree.xray.formal.SpecialXray;
-import brackettree.xray.Xray;
+import brackettree.xray.formal.Xray;
 import suite.suite.SolidSubject;
 import suite.suite.Subject;
 import static suite.suite.$uite.*;
@@ -25,9 +25,11 @@ public class TreeDesigner {
 
     static final Xray idXray = new SpecialXray("#");
     static final Xray classXray = new SpecialXray("@");
+    static final Xray reservationsXray = new SpecialXray("#/reservations");
 
     Subject $refs = set$();
     Subject $decompositions = set$();
+    Subject $reservations = $();
 
     Subject $decomposers = set$();
     Function<Object, Subject> elementaryDecomposer;
@@ -94,16 +96,29 @@ public class TreeDesigner {
         $classAliases.in(aClass).set(alias);
     }
 
+    public static Reservation reserve(Object o) {
+        return new Reservation(o);
+    }
+
     int id;
-    Subject $xRoot;
 
     public Subject load(Object o) {
         $refs = set$();
         var $printedObjectRefs = set$();
         id = 0;
-        $xRoot = set$();
         var xray = xray(o);
-        $xRoot.aimedSet($xRoot.first().raw(), xray);
+        var $reservations = Suite.alter(this.$reservations);
+        Subject $xRoot;
+        if(xray instanceof ObjectXray x) {
+            if(x.getUsages() > 1) {
+                if(x.getRefId() == null) x.setRefId("" + id++);
+                $xRoot = set$($(idXray, new StringXray(x.getRefId())), $refs.in(x).get(), reservationsXray);
+            } else {
+                $xRoot = set$($refs.in(x).get(), reservationsXray);
+            }
+        } else {
+            $xRoot = set$(xray, reservationsXray);
+        }
         for(var $i : preDfs$(add$($xRoot)).eachIn()) {
             for(var $i1 : $i) {
                 if($i1.is(ObjectXray.class)) {
@@ -114,21 +129,26 @@ public class TreeDesigner {
                         $i.unset().alter($refs.in(x));
                         $printedObjectRefs.set(x);
                     } else {
-                        if ($printedObjectRefs.absent(x)) {
+                        var $reservation = $reservations.in(x).get();
+
+                        if ($printedObjectRefs.absent(x) && ($reservation.absent() || $i == $reservation.raw())) {
+                            $reservations.unset(x);
                             $printedObjectRefs.set(x);
                             if(x.getRefId() == null) x.setRefId("" + id++);
                             var $r = $refs.in(x).get();
-                            if(isLeaf) {
-                                $r.aimedInset($r.first().raw(), idXray, set$(new StringXray(x.getRefId())));
-                                $i.unset().alter($r);
+                            if (isLeaf) {
+                                $i.unset().put(idXray, new StringXray(x.getRefId())).alter($r);
                             } else {
                                 $i.shift(x, new SpecialXray("##" + x.getRefId()));
                                 $xRoot.inset(new SpecialXray("#" + x.getRefId()), $r);
                             }
                         } else if(!isLeaf) {
+                            if(x.getRefId() == null) x.setRefId("" + id++);
                             $i.shift(x, new SpecialXray("##" + x.getRefId()));
                         }
                     }
+                } else if($i1.raw() == reservationsXray) {
+                    $i.unset(reservationsXray);
                 }
             }
         }
@@ -136,7 +156,16 @@ public class TreeDesigner {
         else return $xRoot;
     }
 
-    Xray xray(Object o) {
+    public static class Reservation {
+        Object o;
+
+        public Reservation(Object o) {
+            this.o = o;
+        }
+    }
+
+    public Xray xray(Object o) {
+        if(o instanceof Reservation r) o = r.o;
         if(o instanceof Xray) return (Xray) o;
         var $prim = elementaryDecomposer.apply(o);
         if($prim.present()) return new StringXray($prim.asExpected());
@@ -149,7 +178,13 @@ public class TreeDesigner {
             $refs.inset(xray, $);
             for(var $i : preDfs$(add$($)).eachIn()) {
                 for(var i : $i.eachRaw()) {
-                    $i.shift(i, xray(i));
+                    if(i instanceof Reservation r && $i.size() == 1 && $i.in().absent()) {
+                        var x = xray(r.o);
+                        $i.shift(i, x);
+                        $reservations.put(x, $i);
+                    } else {
+                        $i.shift(i, xray(i));
+                    }
                 }
             }
         }
@@ -192,7 +227,11 @@ public class TreeDesigner {
                         return (Subject)method.invoke(null, type.cast(o), this);
                     }
                 }
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             try {
                 Method method = type.getMethod("decompose", type);
                 if(method.trySetAccessible()) {
@@ -204,7 +243,11 @@ public class TreeDesigner {
                         return $r;
                     }
                 }
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             if(o instanceof Interpreted) {
                 var $r = ((Interpreted)o).interpret();
                 if(attachingTypes) attachType($r, type);
@@ -250,7 +293,7 @@ public class TreeDesigner {
         return set$();
     }
 
-    void attachType(Subject $, Class<?> type) {
+    public void attachType(Subject $, Class<?> type) {
         $.aimedInset($.raw(), classXray, wrapType(type));
     }
 
