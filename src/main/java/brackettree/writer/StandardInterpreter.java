@@ -25,7 +25,7 @@ public class StandardInterpreter {
         );
     }
 
-    public static Subject interpret(Interpreted interpreted) {
+    public static Subject interpret(Object interpreted) {
         var $ = set$();
         for(Class<?> aClass = interpreted.getClass(); aClass != Object.class; aClass = aClass.getSuperclass()) {
             Field[] fields = aClass.getDeclaredFields();

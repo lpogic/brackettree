@@ -248,12 +248,20 @@ public class TreeDesigner {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if(o instanceof Interpreted) {
-                var $r = ((Interpreted)o).interpret();
+            if(o instanceof Interpreted interpreted) {
+                var $r = interpreted.interpret();
                 if(attachingTypes) attachType($r, type);
                 $decompositions.inset(xray, $r);
                 return $r;
             }
+
+            if(type.isRecord()) {
+                var $r = StandardInterpreter.interpret(o);
+                if(isAttachingTypes()) attachType($r, type);
+                $decompositions.inset(xray, $r);
+                return $r;
+            }
+
             if(o instanceof Serializable) {
                 var baos = new ByteArrayOutputStream();
                 var $replacementType = set$();

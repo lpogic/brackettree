@@ -259,13 +259,23 @@ public class ObjectFactory {
 
             try {
                 Constructor<?> constructor = type.getDeclaredConstructor();
-                Interpreted reformable = (Interpreted)constructor.newInstance();
-                $compositions.in($).set(reformable);
-                reformable.discover(factoryVendorRoot($));
-                return set$(reformable);
+                if(constructor.trySetAccessible()) {
+                    Interpreted reformable = (Interpreted) constructor.newInstance();
+                    $compositions.in($).set(reformable);
+                    reformable.discover(factoryVendorRoot($));
+                    return set$(reformable);
+                }
             } catch(NoSuchMethodException ignored) {
             } catch (Exception exception) {
                 exception.printStackTrace();
+            }
+        }
+
+        if(type.isRecord()) {
+            var $r = composeRecord(factoryVendorRoot($), type);
+            if ($r.present()) {
+                $compositions.in($).set($r.raw());
+                return $r;
             }
         }
 
@@ -305,6 +315,40 @@ public class ObjectFactory {
         }
         return set$((Object)a);
     }
+
+    Subject composeRecord(Subject $, Class<?> recordClass) {
+
+        try {
+            var components = recordClass.getRecordComponents();
+            var classes = new Class<?>[components.length];
+            var objects = new Object[components.length];
+            for(int i = 0; i < components.length; ++ i) {
+                classes[i] = components[i].getType();
+                objects[i] = $.in(components[i].getName()).as(classes[i].isPrimitive() ?
+                        $primBox.in(classes[i]).asExpected() : classes[i]);
+            }
+
+            Constructor<?> constructor = recordClass.getDeclaredConstructor(classes);
+            if(constructor.trySetAccessible()) {
+                return set$(constructor.newInstance(objects));
+            }
+        } catch(NoSuchMethodException ignored) {
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return $();
+    }
+
+    static final Subject $primBox = Suite
+            .put(boolean.class, Boolean.class)
+            .put(byte.class, Byte.class)
+            .put(char.class, Character.class)
+            .put(double.class, Double.class)
+            .put(float.class, Float.class)
+            .put(int.class, Integer.class)
+            .put(long.class, Long.class)
+            .put(short.class, Short.class)
+            .put(void.class, Void.class);
 
     FactoryVendorRoot factoryVendorRoot(Subject $sub) {
         for(var $ : $sub) {

@@ -69,18 +69,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
-//        System.out.println(Integer[].class);
 
-        var foo = new Foo(5, 6);
-        var repo = new Repo(foo, foo, foo);
-//        System.out.println(BracketTree.encode("text"));
-//        BracketTree.encode(Suite.set(foo, repo));
-        String tree;
-        tree = BracketTree.encode("to jest text");
+        record Bar(int a, int b){}
+
+        String tree = BracketTree.encode(new Bar(343, 434));
         System.out.println(tree);
-        var parsed = BracketTree.parse(tree);
-        String i = /*
-        Subject $ =*/ parsed.asExpected();
-        System.out.println(i);
+        var bar = BracketTree.parse(tree).as(Bar.class);
+        System.out.println(bar);
     }
 }
