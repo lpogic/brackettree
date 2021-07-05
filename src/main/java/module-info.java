@@ -1,5 +1,5 @@
 open module brackettree {
-    requires suite.main;
+    requires suite;
     exports brackettree;
     exports brackettree.writer;
     exports brackettree.reader;
