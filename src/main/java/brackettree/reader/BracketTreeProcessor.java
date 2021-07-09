@@ -5,7 +5,7 @@ import suite.suite.Subject;
 
 import java.util.Stack;
 
-import static suite.suite.$uite.set$;
+import static suite.suite.$uite.$;
 
 public class BracketTreeProcessor implements IntProcessor {
 
@@ -38,7 +38,7 @@ public class BracketTreeProcessor implements IntProcessor {
     @Override
     public void getReady() {
         branch = new Stack<>();
-        $work = set$();
+        $work = $();
         state = State.BEFORE;
         primaryBuilder = new StringBuilder();
         secondaryBuilder = new StringBuilder();
@@ -73,7 +73,7 @@ public class BracketTreeProcessor implements IntProcessor {
                     if(secondaryBuilder != null) {
                         $newWork = $work.in(secondaryBuilder.toString()).set();
                     } else {
-                        $work.inset($newWork = set$());
+                        $work.inset($newWork = $());
                     }
                     branch.add($work);
                     $work = $newWork;

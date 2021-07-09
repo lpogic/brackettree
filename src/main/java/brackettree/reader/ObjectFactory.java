@@ -25,14 +25,14 @@ import static suite.suite.$uite.*;
 
 public class ObjectFactory {
 
-    Subject $references = set$();
-    Subject $inferredTypes = set$();
+    Subject $references = $();
+    Subject $inferredTypes = $();
 
-    Subject $externalReferences = set$();
+    Subject $externalReferences = $();
 
-    Subject $compositions = set$();
-    Subject $composers = set$();
-    Subject $classAliases = set$();
+    Subject $compositions = $();
+    Subject $composers = $();
+    Subject $classAliases = $();
     Function<String, Subject> elementaryComposer;
 
     public ObjectFactory(Series $composers) {
@@ -46,13 +46,13 @@ public class ObjectFactory {
                 put("string", String.class).
                 put("serial", Serializable.class)
         );
-        elementaryComposer = str -> set$();
+        elementaryComposer = str -> $();
     }
 
     public FactoryVendor load(Subject $root) {
-        $references = set$();
-        $inferredTypes = set$();
-        for(var $1 : postDfs$(add$($root), $ -> $.exclude($$ -> {
+        $references = $();
+        $inferredTypes = $();
+        for(var $1 : postDfs$($($root), $ -> $.exclude($$ -> {
             var o = $$.raw();
             return "#".equals(o) || "@".equals(o);
         })).eachIn()) {
@@ -78,7 +78,7 @@ public class ObjectFactory {
 
     public void setComposition(String ref, Object param) {
         if(ref.startsWith("#")) ref = ref.substring(1);
-        var $s = set$();
+        var $s = $();
         $externalReferences.inset(ref, $s);
         $compositions.in($s).set(param);
     }
@@ -155,7 +155,7 @@ public class ObjectFactory {
             if($.is(String.class)) {
                 var $type = findType($.asString());
                 if($type.present()) return $.shift($type.raw());
-                else return set$();
+                else return $();
             } else return $;
         });
         inferTypeRq(Series.of($root), $typeTree);
@@ -182,12 +182,12 @@ public class ObjectFactory {
         }
 
         try {
-            return set$(Class.forName(type));
+            return $(Class.forName(type));
         } catch (ClassNotFoundException e) {
             System.err.println("ObjectFactory: class '" + type + "' not found");
         }
 
-        return set$();
+        return $();
     }
 
     Subject compose(Subject $, Class<?> type) {
@@ -263,7 +263,7 @@ public class ObjectFactory {
                     Interpreted reformable = (Interpreted) constructor.newInstance();
                     $compositions.in($).set(reformable);
                     reformable.discover(factoryVendorRoot($));
-                    return set$(reformable);
+                    return $(reformable);
                 }
             } catch(NoSuchMethodException ignored) {
             } catch (Exception exception) {
@@ -313,7 +313,7 @@ public class ObjectFactory {
         for(var $up : $.eachIn()) {
             a[i++] = $up.asExpected();
         }
-        return set$((Object)a);
+        return $(a);
     }
 
     Subject composeRecord(Subject $, Class<?> recordClass) {
@@ -330,7 +330,7 @@ public class ObjectFactory {
 
             Constructor<?> constructor = recordClass.getDeclaredConstructor(classes);
             if(constructor.trySetAccessible()) {
-                return set$(constructor.newInstance(objects));
+                return $(constructor.newInstance(objects));
             }
         } catch(NoSuchMethodException ignored) {
         } catch (Exception exception) {

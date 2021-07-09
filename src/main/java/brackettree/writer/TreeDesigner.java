@@ -27,14 +27,14 @@ public class TreeDesigner {
     static final Xray classXray = new SpecialXray("@");
     static final Xray reservationsXray = new SpecialXray("#/reservations");
 
-    Subject $refs = set$();
-    Subject $decompositions = set$();
+    Subject $refs = $();
+    Subject $decompositions = $();
     Subject $reservations = $();
 
-    Subject $decomposers = set$();
+    Subject $decomposers = $();
     Function<Object, Subject> elementaryDecomposer;
     boolean attachingTypes;
-    Subject $classAliases = set$();
+    Subject $classAliases = $();
 
     public TreeDesigner() {
         setDecomposers(StandardInterpreter.getAllSupported());
@@ -51,13 +51,13 @@ public class TreeDesigner {
                 put(Serializable.class, "serial")
         );
         elementaryDecomposer = o -> {
-            if(o == null) return set$("null");
-            if(o instanceof String) return set$(o);
-            if(o instanceof Integer) return set$(o.toString());
-            if(o instanceof Double) return set$(o.toString());
-            if(o instanceof Float) return set$(o.toString());
-            if(o instanceof Boolean) return set$(o.toString());
-            return set$();
+            if(o == null) return $("null");
+            if(o instanceof String) return $(o);
+            if(o instanceof Integer) return $(o.toString());
+            if(o instanceof Double) return $(o.toString());
+            if(o instanceof Float) return $(o.toString());
+            if(o instanceof Boolean) return $(o.toString());
+            return $();
         };
         attachingTypes = true;
     }
@@ -103,8 +103,8 @@ public class TreeDesigner {
     int id;
 
     public Subject load(Object o) {
-        $refs = set$();
-        var $printedObjectRefs = set$();
+        $refs = $();
+        var $printedObjectRefs = $();
         id = 0;
         var xray = xray(o);
         var $reservations = Suite.alter(this.$reservations);
@@ -112,14 +112,14 @@ public class TreeDesigner {
         if(xray instanceof ObjectXray x) {
             if(x.getUsages() > 1) {
                 if(x.getRefId() == null) x.setRefId("" + id++);
-                $xRoot = set$($(idXray, new StringXray(x.getRefId())), $refs.in(x).get(), reservationsXray);
+                $xRoot = $(idXray, $(new StringXray(x.getRefId()))).alter($refs.in(x).get()).set(reservationsXray);
             } else {
-                $xRoot = set$($refs.in(x).get(), reservationsXray);
+                $xRoot = $().alter($refs.in(x).get()).set(reservationsXray);
             }
         } else {
-            $xRoot = set$(xray, reservationsXray);
+            $xRoot = $(xray, reservationsXray);
         }
-        for(var $i : preDfs$(add$($xRoot)).eachIn()) {
+        for(var $i : preDfs$($($xRoot)).eachIn()) {
             for(var $i1 : $i) {
                 if($i1.is(ObjectXray.class)) {
                     ObjectXray x = $i1.asExpected();
@@ -176,7 +176,7 @@ public class TreeDesigner {
         if(xray.use() < 1) {
             var $ = decompose(o, xray);
             $refs.inset(xray, $);
-            for(var $i : preDfs$(add$($)).eachIn()) {
+            for(var $i : preDfs$($($)).eachIn()) {
                 for(var i : $i.eachRaw()) {
                     if(i instanceof Reservation r && $i.size() == 1 && $i.in().absent()) {
                         var x = xray(r.o);
@@ -264,8 +264,8 @@ public class TreeDesigner {
 
             if(o instanceof Serializable) {
                 var baos = new ByteArrayOutputStream();
-                var $replacementType = set$();
-                var $r = set$();
+                var $replacementType = $();
+                var $r = $();
                 try(var oos = new ObjectOutputStream(baos) {
                     {
                         enableReplaceObject(true);
@@ -298,7 +298,7 @@ public class TreeDesigner {
             }
         }
         System.err.println("Can't decompose " + o);
-        return set$();
+        return $();
     }
 
     public void attachType(Subject $, Class<?> type) {
@@ -306,7 +306,7 @@ public class TreeDesigner {
     }
 
     Subject wrapType(Class<?> type) {
-        Subject $wrappedType = set$();
+        Subject $wrappedType = $();
         var $1 = $classAliases.in(type).get();
         if($1.present()) $wrappedType.set(new StringXray($1.asExpected()));
         else {
@@ -321,7 +321,7 @@ public class TreeDesigner {
 
     Subject interpretArray(Object array) {
         Class<?> type = array.getClass().getComponentType();
-        var $ = set$();
+        var $ = $();
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {

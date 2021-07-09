@@ -6,7 +6,6 @@ import suite.suite.Subject;
 import static suite.suite.$uite.*;
 
 import suite.suite.Suite;
-import suite.suite.action.Action;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -14,64 +13,64 @@ import java.util.ArrayList;
 public class StandardDiscoverer {
 
     public static Subject getAll() {
-        return set$(
-                $(Boolean.class, (Action) StandardDiscoverer::discoverBoolean),
-                $(Integer.class, (Action) StandardDiscoverer::discoverInteger),
-                $(Double.class, (Action) StandardDiscoverer::discoverDouble),
-                $(Float.class, (Action) StandardDiscoverer::discoverFloat),
-                $(Subject.class, (Action) StandardDiscoverer::discoverSubject),
-                $(String.class, (Action) StandardDiscoverer::discoverString),
-                $(Object.class, (Action) StandardDiscoverer::discoverObject), // primitive discoverer
-                $(ArrayList.class, (Action) StandardDiscoverer::discoverList)
+        return $(
+                Boolean.class, $(StandardDiscoverer::discoverBoolean),
+                Integer.class, $(StandardDiscoverer::discoverInteger),
+                Double.class, $(StandardDiscoverer::discoverDouble),
+                Float.class, $(StandardDiscoverer::discoverFloat),
+                Subject.class, $(StandardDiscoverer::discoverSubject),
+                String.class, $(StandardDiscoverer::discoverString),
+                Object.class, $(StandardDiscoverer::discoverObject), // primitive discoverer
+                ArrayList.class, $(StandardDiscoverer::discoverList)
         );
     }
 
     public static Subject discoverBoolean(Subject $) {
         if($.is(String.class)) {
             String str = $.as(String.class);
-            return set$(Boolean.parseBoolean(str) || str.equals("+"));
+            return $(Boolean.parseBoolean(str) || str.equals("+"));
         }
         if($.is(Boolean.class)) return $;
-        return set$(false);
+        return $(false);
 
     }
 
     public static Subject discoverInteger(Subject $) {
-        if($.is(String.class)) return set$(Integer.valueOf($.as(String.class)));
-        if($.is(Number.class)) return set$($.as(Number.class).intValue());
-        return set$();
+        if($.is(String.class)) return $(Integer.valueOf($.as(String.class)));
+        if($.is(Number.class)) return $($.as(Number.class).intValue());
+        return $();
     }
 
     public static Subject discoverDouble(Subject $) {
-        if($.is(String.class)) return set$(Double.valueOf($.as(String.class)));
-        if($.is(Number.class)) return set$($.as(Number.class).doubleValue());
-        return set$();
+        if($.is(String.class)) return $(Double.valueOf($.as(String.class)));
+        if($.is(Number.class)) return $($.as(Number.class).doubleValue());
+        return $();
     }
 
     public static Subject discoverFloat(Subject $) {
-        if($.is(String.class)) return set$(Float.valueOf($.as(String.class)));
-        if($.is(Number.class)) return set$($.as(Number.class).floatValue());
-        return set$();
+        if($.is(String.class)) return $(Float.valueOf($.as(String.class)));
+        if($.is(Number.class)) return $($.as(Number.class).floatValue());
+        return $();
     }
 
     public static Subject discoverString(Subject $) {
         String str = $.as(String.class, "");
         boolean cutFront = str.startsWith("'"), cutBack = str.endsWith("'");
-        return set$(cutFront ? cutBack ? str.substring(1, str.length() - 1) : str.substring(1) :
+        return $(cutFront ? cutBack ? str.substring(1, str.length() - 1) : str.substring(1) :
                 cutBack ? str.substring(0, str.length() - 1) : str);
     }
 
     public static Subject discoverObject(Subject $) {
-        if($.absent()) return set$();
+        if($.absent()) return $();
         if($.size() == 1 && $.in().absent() && $.is(String.class)) {
 //            return discoverString($); // skip elementary
 
             String str = $.as(String.class);
             boolean cutFront = str.startsWith("'"), cutBack = str.endsWith("'");
             if(cutFront) {
-                return set$(cutBack ? str.substring(1, str.length() - 1) : str.substring(1));
+                return $(cutBack ? str.substring(1, str.length() - 1) : str.substring(1));
             } else if(Character.isDigit(str.codePointAt(0))) {
-                return set$(Integer.valueOf(str));
+                return $(Integer.valueOf(str));
             }
 
 
@@ -81,24 +80,24 @@ public class StandardDiscoverer {
     }
 
     public static Subject discoverSubject(Subject $) {
-        var $r = set$();
+        var $r = $();
         for(var $1 : $) {
             var o = $1.in().raw();
             if(o instanceof Subject) $r.inset($1.raw(), (Subject) o);
-            else $r.inset($1.raw(), set$(o));
+            else $r.inset($1.raw(), $(o));
         }
         return Suite.set($r);
     }
 
     public static Subject discoverList(Subject $) {
-        return set$($.eachIn().eachRaw().toList());
+        return $($.eachIn().eachRaw().toList());
     }
 
-    static Subject $boxer = set$(
-            $(int.class, Integer.class),
-            $(float.class, Float.class),
-            $(double.class, Double.class),
-            $(boolean.class, Boolean.class)
+    static Subject $boxer = $(
+            int.class, $(Integer.class),
+            float.class, $(Float.class),
+            double.class, $(Double.class),
+            boolean.class, $(Boolean.class)
     );
 
     public static void discover(Interpreted reformable, Subject $) {

@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static suite.suite.$uite.set$;
+import static suite.suite.$uite.$;
 
 public class BracketTreeReader {
 
@@ -80,7 +80,7 @@ public class BracketTreeReader {
             return load(file);
         } catch (Exception e) {
             e.printStackTrace();
-            return set$();
+            return $();
         }
     }
 
@@ -93,7 +93,7 @@ public class BracketTreeReader {
             return load(url);
         } catch (Exception e) {
             e.printStackTrace();
-            return set$();
+            return $();
         }
     }
 
@@ -107,7 +107,7 @@ public class BracketTreeReader {
             return load(inputStream);
         } catch (Exception e) {
             e.printStackTrace();
-            return set$();
+            return $();
         }
     }
 
