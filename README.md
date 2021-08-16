@@ -18,4 +18,4 @@ nodeE[ nodeF ]
 ```
 &#x21e7; 'nodeC' jest potomkiem 'nodeB'. 'nodeB' i 'nodeD' są potomkami 'nodeA'. Symbol '[]' po ostatnim potomku jest opcjonalny. 'nodeF' jest potomkiem 'nodeE'. 'nodeA' i 'nodeE' są potomkami korzenia.<br><br><br>
 ```| nodeG | [ nodeH ]``` &#x21e6; 'nodeH' jest potomkiem ' nodeG '. Jeśli wymiar tekstowy nie jest aktywny, początkowe i końcowe białe znaki są usuwane. Wymiar tekstowy jest otwierany przez znak '|'.<br><br><br>
-```|nodeJ | [ ~~| node|~ |~~ ]``` &#x21e6; 'nodeJ ' jest potomkiem ' node|~ '. Napis występujący bezpośrednio przed znakiem '|' jest hasłem portalu. Wymiar tekstowy jest zamykany przez hasło portalu poprzedzone znakiem '|'. Dla ' node|~ ' hasłem portalu jest '\~~', dla 'nodeJ ' hasło portalu jest puste.<br><br><br>
+```|nodeJ | [ ~~| node|~ |~~ ]``` &#x21e6; ' node|~ ' jest potomkiem 'nodeJ '. Napis występujący bezpośrednio przed znakiem '|' jest hasłem portalu. Wymiar tekstowy jest zamykany przez hasło portalu poprzedzone znakiem '|'. Dla ' node|~ ' hasłem portalu jest '\~~', dla 'nodeJ ' hasło portalu jest puste.<br><br><br>
