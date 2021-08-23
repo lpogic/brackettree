@@ -139,12 +139,12 @@ public class TreeDesigner {
                             if (isLeaf) {
                                 $i.unset().put(idXray, new StringXray(x.getRefId())).alter($r);
                             } else {
-                                $i.shift(x, new SpecialXray("##" + x.getRefId()));
+                                $i.swap(x, new SpecialXray("##" + x.getRefId()));
                                 $xRoot.inset(new SpecialXray("#" + x.getRefId()), $r);
                             }
                         } else if(!isLeaf) {
                             if(x.getRefId() == null) x.setRefId("" + id++);
-                            $i.shift(x, new SpecialXray("##" + x.getRefId()));
+                            $i.swap(x, new SpecialXray("##" + x.getRefId()));
                         }
                     }
                 } else if($i1.raw() == reservationsXray) {
@@ -180,10 +180,10 @@ public class TreeDesigner {
                 for(var i : $i.eachRaw()) {
                     if(i instanceof Reservation r && $i.size() == 1 && $i.in().absent()) {
                         var x = xray(r.o);
-                        $i.shift(i, x);
+                        $i.swap(i, x);
                         $reservations.put(x, $i);
                     } else {
-                        $i.shift(i, xray(i));
+                        $i.swap(i, xray(i));
                     }
                 }
             }

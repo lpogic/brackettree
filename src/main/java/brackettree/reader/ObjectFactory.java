@@ -154,7 +154,7 @@ public class ObjectFactory {
         $typeTree.introspect($ -> {
             if($.is(String.class)) {
                 var $type = findType($.asString());
-                if($type.present()) return $.shift($type.raw());
+                if($type.present()) return $.swap($.raw(), $type.raw());
                 else return $();
             } else return $;
         });
@@ -355,10 +355,10 @@ public class ObjectFactory {
             if($.is(String.class)) {
                 String str = $.asExpected();
                 if(str.startsWith("##")) {
-                    $sub.shift(str, get(findReferred($(str.substring(1))), Object.class).asExpected());
+                    $sub.swap(str, get(findReferred($(str.substring(1))), Object.class).asExpected());
                 } else {
                     var $prim = elementaryComposer.apply(str);
-                    if($prim.present()) $sub.shift(str, $prim.raw());
+                    if($prim.present()) $sub.swap(str, $prim.raw());
                 }
             }
         }
