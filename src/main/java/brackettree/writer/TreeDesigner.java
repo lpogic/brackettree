@@ -177,7 +177,7 @@ public class TreeDesigner {
             var $ = decompose(o, xray);
             $refs.inset(xray, $);
             for(var $i : preDfs$($($)).eachIn()) {
-                for(var i : $i.eachRaw()) {
+                for(var i : $i.each()) {
                     if(i instanceof Reservation r && $i.size() == 1 && $i.in().absent()) {
                         var x = xray(r.o);
                         $i.swap(i, x);

@@ -90,7 +90,7 @@ public class StandardDiscoverer {
     }
 
     public static Subject discoverList(Subject $) {
-        return $($.eachIn().eachRaw().toList());
+        return $($.eachIn().each().toList());
     }
 
     static Subject $boxer = $(
