@@ -44,7 +44,7 @@ public class BracketTreeProcessor implements IntProcessor {
         secondaryBuilder = new StringBuilder();
     }
 
-    public void advance(int i) {
+    public int advance(int i) {
         switch (state) {
             case BEFORE:
                 if(i == closeSign) {
@@ -107,6 +107,7 @@ public class BracketTreeProcessor implements IntProcessor {
                 }
                 break;
         }
+        return 0;
     }
 
     @Override
