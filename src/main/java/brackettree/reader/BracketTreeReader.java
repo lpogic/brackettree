@@ -2,128 +2,83 @@ package brackettree.reader;
 
 
 import suite.suite.Subject;
-import suite.suite.action.Action;
 
 import java.io.*;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 import static suite.suite.$uite.$;
 
 public class BracketTreeReader {
 
-    private ObjectFactory factory;
-
-    public BracketTreeReader() {
-        this(new ObjectFactory(StandardDiscoverer.getAll()));
+    public static Subject parse(String tree, ObjectFactory objectFactory) throws IOException {
+        try(var bais = new ByteArrayInputStream(tree.getBytes())) {
+            var btr = new BracketTreeReader(bais, objectFactory);
+            return btr.next();
+        }
     }
 
-    public BracketTreeReader(ObjectFactory factory) {
+    public static Subject load(File file, ObjectFactory objectFactory) throws IOException {
+        try(var fis = new FileInputStream(file)) {
+            var btr = new BracketTreeReader(fis, objectFactory);
+            return btr.next();
+        }
+    }
+
+    public static Subject load(URL url, ObjectFactory objectFactory) throws IOException {
+        try(var cis = url.openConnection().getInputStream()) {
+            var btr = new BracketTreeReader(cis, objectFactory);
+            return btr.next();
+        }
+    }
+
+    private final InputStream inputStream;
+    private final ObjectFactory factory;
+    private Subject next;
+    boolean hasNext;
+    boolean hasNextFired;
+
+    public BracketTreeReader(InputStream inputStream) {
+        this(inputStream, new ObjectFactory(StandardDiscoverer.getAll()));
+    }
+
+    public BracketTreeReader(InputStream inputStream, ObjectFactory factory) {
+        this.inputStream = inputStream;
         this.factory = factory;
     }
 
-    public Subject read(String filePath) {
-        return loadWell(new File(filePath));
-    }
-
-    public Subject read(File file) {
-        return loadWell(file);
-    }
-
-    public Subject read(InputStream inputStream) {
-        return loadWell(inputStream);
-    }
-
-    public Subject parse(String tree) {
-        InputStream inputStream = new ByteArrayInputStream(tree.getBytes());
-        return loadWell(inputStream);
-    }
-
-    public ObjectFactory getFactory() {
-        return factory;
-    }
-
-    public void setFactory(ObjectFactory factory) {
-        this.factory = factory;
-    }
-
-    public BracketTreeReader withComposer(Class<?> type, Action recipe) {
-        factory.setComposer(type, recipe);
-        return this;
-    }
-
-    public<T> BracketTreeReader withComposer(Class<T> type, BiConsumer<Subject, ObjectFactory> recipe) {
-        factory.setComposer(type, recipe);
-        return this;
-    }
-
-    public BracketTreeReader withComposition(String reference, Object composition) {
-        factory.setComposition(reference, composition);
-        return this;
-    }
-
-    public BracketTreeReader withElementaryComposer(Function<String, Subject> composer) {
-        factory.setElementaryComposer(composer);
-        return this;
-    }
-
-    public BracketTreeReader withAlias(Class<?> aClass, String alias) {
-        this.factory.setClassAlias(alias, aClass);
-        return this;
-    }
-
-    Subject loadWell(File file) {
-        try {
-            return load(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return $();
-        }
-    }
-
-    Subject load(File file) throws IOException, BracketTreeReadException {
-        return load(new FileInputStream(file));
-    }
-
-    Subject loadWell(URL url) {
-        try {
-            return load(url);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return $();
-        }
-    }
-
-    Subject load(URL url) throws IOException, BracketTreeReadException {
-        URLConnection connection = url.openConnection();
-        return load(connection.getInputStream());
-    }
-
-    Subject loadWell(InputStream inputStream) {
-        try {
-            return load(inputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return $();
-        }
-    }
-
-    Subject load(InputStream inputStream) throws BracketTreeReadException {
+    public boolean hasNext() {
+        if(hasNextFired) return hasNext;
+        hasNextFired = true;
         BracketTreeProcessor processor = new BracketTreeProcessor();
         processor.getReady();
-        try (inputStream) {
+        try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             int code = reader.read();
-            while (code != -1) {
+            if(code == -1) {
+                next = null;
+                return hasNext = false;
+            }
+            while (code != -1 && code != 23) {
                 processor.advance(code);
                 code = reader.read();
             }
-            return factory.load(processor.finish());
+            next = factory.load(processor.finish());
+            return hasNext = true;
         }catch(Exception e) {
             throw new BracketTreeReadException(e);
+        }
+    }
+
+    public Subject next() {
+        if(!hasNextFired) hasNext();
+        if(hasNext) {
+            hasNextFired = false;
+            var n = next;
+            next = null;
+            return n;
+        } else {
+            return $();
         }
     }
 }

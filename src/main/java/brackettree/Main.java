@@ -1,9 +1,7 @@
 package brackettree;
 
-import brackettree.reader.BracketTree;
 import brackettree.writer.TreeDesigner;
 import suite.suite.Subject;
-import suite.suite.Suite;
 import suite.suite.util.Cascade;
 
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package brackettree.reader;
 
-public class BracketTreeReadException extends Exception {
+public class BracketTreeReadException extends RuntimeException {
 
     public BracketTreeReadException() {
     }

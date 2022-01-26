@@ -20,7 +20,6 @@ public class BracketTreeWriter {
     private String closeSign = "]";
     private String fenceSign = "\"";
 
-
     public BracketTreeWriter() {
         this(new TreeDesigner());
     }
@@ -31,40 +30,26 @@ public class BracketTreeWriter {
         root = false;
     }
 
-    public boolean write(Object object, String filePath) {
-        try {
-            save(object, new FileOutputStream(filePath));
-        } catch (BracketTreeWriteException | IOException e) {
-            e.printStackTrace();
-            return false;
+    public void save(Object o, File file) throws IOException, BracketTreeWriteException {
+        try(var fos = new FileOutputStream(file)) {
+            write(o, fos);
         }
-        return true;
     }
 
-    public boolean write(Object object, File file) {
-        try {
-            save(object, new FileOutputStream(file));
-        } catch (BracketTreeWriteException | IOException e) {
-            e.printStackTrace();
-            return false;
+    public void save(Object o, URL url) throws IOException, BracketTreeWriteException {
+        try(var cos = url.openConnection().getOutputStream()) {
+            write(o, cos);
         }
-        return true;
-    }
-
-    public boolean write(Object object, URL url) {
-        try {
-            URLConnection connection = url.openConnection();
-            save(object, connection.getOutputStream());
-        } catch (IOException | BracketTreeWriteException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 
     public String encode(Object o) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        return saveWell(o, outputStream) ? outputStream.toString() : "";
+        try(var outputStream = new ByteArrayOutputStream()) {
+            write(o, outputStream);
+            return outputStream.toString();
+        } catch (IOException | BracketTreeWriteException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public TreeDesigner getDesigner() {
@@ -88,7 +73,7 @@ public class BracketTreeWriter {
     }
 
     public void setCloseSign(int closeSign) {
-        this.closeSign = new String(new int[]{closeSign}, 0, 1);;
+        this.closeSign = new String(new int[]{closeSign}, 0, 1);
     }
 
     public int getFenceSign() {
@@ -96,7 +81,7 @@ public class BracketTreeWriter {
     }
 
     public void setFenceSign(int fenceSign) {
-        this.fenceSign = new String(new int[]{fenceSign}, 0, 1);;
+        this.fenceSign = new String(new int[]{fenceSign}, 0, 1);
     }
 
     public BracketTreeWriter withDecomposer(Class<?> type, Action decomposer) {
@@ -143,46 +128,7 @@ public class BracketTreeWriter {
         this.root = root;
     }
 
-    public boolean saveWell(Object o, File file) {
-        try {
-            save(o, file);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public void save(Object o, File file) throws IOException, BracketTreeWriteException {
-        save(o, new FileOutputStream(file));
-    }
-
-    public boolean saveWell(Object o, URL url) {
-        try {
-            save(o, url);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public void save(Object o, URL url) throws IOException, BracketTreeWriteException {
-        URLConnection connection = url.openConnection();
-        save(o, connection.getOutputStream());
-    }
-
-    public boolean saveWell(Object o, OutputStream output) {
-        try {
-            save(o, output);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public void save(Object o, OutputStream output) throws BracketTreeWriteException, IOException {
+    public void write(Object o, OutputStream output) throws BracketTreeWriteException, IOException {
 
         OutputStreamWriter writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
 
@@ -191,9 +137,6 @@ public class BracketTreeWriter {
         String str = toString$($, root, this::stringify, compact);
 
         writer.write(str);
-
-        writer.flush();
-        output.close();
     }
 
     public String stringify(Object object) {
