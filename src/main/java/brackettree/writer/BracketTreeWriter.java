@@ -3,6 +3,8 @@ package brackettree.writer;
 import brackettree.xray.formal.Xray;
 import suite.suite.Subject;
 import static suite.suite.$uite.*;
+
+import suite.suite.Suite;
 import suite.suite.action.Action;
 
 import java.io.*;
@@ -33,6 +35,7 @@ public class BracketTreeWriter {
     public void save(Object o, File file) throws IOException, BracketTreeWriteException {
         try(var fos = new FileOutputStream(file)) {
             write(o, fos);
+            fos.flush();
         }
     }
 
@@ -134,9 +137,8 @@ public class BracketTreeWriter {
 
         var $ = designer.load(o);
 
-        String str = toString$($, root, this::stringify, compact);
-
-        writer.write(str);
+        Suite.export($, writer, root, this::stringify, compact);
+        writer.flush();
     }
 
     public String stringify(Object object) {

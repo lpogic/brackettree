@@ -11,46 +11,81 @@ import static suite.suite.$uite.$;
 
 public class BracketTreeReader {
 
+    public static Subject parse(String tree) throws IOException {
+        try(var bais = new ByteArrayInputStream(tree.getBytes())) {
+            var btr = new BracketTreeReader(bais);
+            return btr.next();
+        }
+    }
+
+    public static Subject load(File file) throws IOException {
+        try(var fis = new FileInputStream(file)) {
+            var btr = new BracketTreeReader(fis);
+            return btr.next();
+        }
+    }
+
+    public static Subject load(URL url) throws IOException {
+        try(var cis = url.openConnection().getInputStream()) {
+            var btr = new BracketTreeReader(cis);
+            return btr.next();
+        }
+    }
+
     public static Subject parse(String tree, ObjectFactory objectFactory) throws IOException {
         try(var bais = new ByteArrayInputStream(tree.getBytes())) {
-            var btr = new BracketTreeReader(bais, objectFactory);
+            var btr = new BracketTreeReader(bais, new BracketTreeProcessor() {
+                @Override
+                public Subject finish() {
+                    return objectFactory.load(super.finish());
+                }
+            });
             return btr.next();
         }
     }
 
     public static Subject load(File file, ObjectFactory objectFactory) throws IOException {
         try(var fis = new FileInputStream(file)) {
-            var btr = new BracketTreeReader(fis, objectFactory);
+            var btr = new BracketTreeReader(fis, new BracketTreeProcessor() {
+                @Override
+                public Subject finish() {
+                    return objectFactory.load(super.finish());
+                }
+            });
             return btr.next();
         }
     }
 
     public static Subject load(URL url, ObjectFactory objectFactory) throws IOException {
         try(var cis = url.openConnection().getInputStream()) {
-            var btr = new BracketTreeReader(cis, objectFactory);
+            var btr = new BracketTreeReader(cis, new BracketTreeProcessor() {
+                @Override
+                public Subject finish() {
+                    return objectFactory.load(super.finish());
+                }
+            });
             return btr.next();
         }
     }
 
     private final InputStream inputStream;
-    private final ObjectFactory factory;
+    private final BracketTreeProcessor processor;
     private Subject next;
     boolean hasNext;
     boolean hasNextFired;
 
     public BracketTreeReader(InputStream inputStream) {
-        this(inputStream, new ObjectFactory(StandardDiscoverer.getAll()));
+        this(inputStream, new BracketTreeProcessor());
     }
 
-    public BracketTreeReader(InputStream inputStream, ObjectFactory factory) {
+    public BracketTreeReader(InputStream inputStream, BracketTreeProcessor processor) {
         this.inputStream = inputStream;
-        this.factory = factory;
+        this.processor = processor;
     }
 
     public boolean hasNext() {
         if(hasNextFired) return hasNext;
         hasNextFired = true;
-        BracketTreeProcessor processor = new BracketTreeProcessor();
         processor.getReady();
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
@@ -63,7 +98,7 @@ public class BracketTreeReader {
                 processor.advance(code);
                 code = reader.read();
             }
-            next = factory.load(processor.finish());
+            next = processor.finish();
             return hasNext = true;
         }catch(Exception e) {
             throw new BracketTreeReadException(e);

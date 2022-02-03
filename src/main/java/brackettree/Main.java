@@ -72,7 +72,7 @@ public class Main {
 
         String tree = BracketTree.encode(new Bar(343, 434));
         System.out.println(tree);
-        var bar = BracketTree.parse(tree).as(Bar.class);
+        var bar = BracketTree.parse(tree, Bar.class);
         System.out.println(bar);
     }
 }

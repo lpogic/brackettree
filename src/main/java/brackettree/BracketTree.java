@@ -20,32 +20,54 @@ public class BracketTree {
     }
 
     public static Subject read(File file) {
-        return read(file, new ObjectFactory(StandardDiscoverer.getAll()));
-    }
-
-    public static Subject read(String filePath, ObjectFactory objectFactory) {
-        return read(new File(filePath), objectFactory);
-    }
-
-    public static Subject read(File file, ObjectFactory objectFactory) {
         try {
-            return BracketTreeReader.load(file, objectFactory);
+            return BracketTreeReader.load(file);
         } catch (Exception e) {
             e.printStackTrace();
             return $();
         }
     }
 
-    public static Subject parse(String tree) {
-        return parse(tree, new ObjectFactory(StandardDiscoverer.getAll()));
+    public static<T> T read(String filePath, Class<T> outputClass) {
+        return read(new File(filePath), new ObjectFactory(StandardDiscoverer.getAll()), outputClass);
     }
 
-    public static Subject parse(String tree, ObjectFactory objectFactory) {
+    public static<T> T read(File file, Class<T> outputClass) {
+        return read(file, new ObjectFactory(StandardDiscoverer.getAll()), outputClass);
+    }
+
+    public static<T> T read(String filePath, ObjectFactory objectFactory, Class<T> outputClass) {
+        return read(new File(filePath), objectFactory, outputClass);
+    }
+
+    public static<T> T read(File file, ObjectFactory objectFactory, Class<T> outputClass) {
         try {
-            return BracketTreeReader.parse(tree, objectFactory);
+            return BracketTreeReader.load(file, objectFactory).as(outputClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Subject parse(String tree) {
+        try {
+            return BracketTreeReader.parse(tree);
         } catch (Exception e) {
             e.printStackTrace();
             return $();
+        }
+    }
+
+    public static<T> T parse(String tree, Class<T> outputClass) {
+        return parse(tree, new ObjectFactory(StandardDiscoverer.getAll()), outputClass);
+    }
+
+    public static<T> T parse(String tree, ObjectFactory objectFactory, Class<T> outputClass) {
+        try {
+            return BracketTreeReader.parse(tree, objectFactory).as(outputClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
