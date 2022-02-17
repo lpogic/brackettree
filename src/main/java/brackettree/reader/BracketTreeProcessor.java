@@ -101,7 +101,7 @@ public class BracketTreeProcessor implements IntProcessor {
                 primaryBuilder.appendCodePoint(i);
                 int fenceStartIndex = primaryBuilder.length() - fence.length();
                 if (fenceStartIndex >= 0 && primaryBuilder.indexOf(fence, fenceStartIndex) != -1) {
-                    appendSecondaryBuilder(primaryBuilder.substring(0, fenceStartIndex), false);
+                    appendSecondaryBuilder("\"" + primaryBuilder.substring(0, fenceStartIndex) + "\"", false);
                     primaryBuilder = new StringBuilder();
                     state = State.TREE;
                 }
@@ -117,7 +117,7 @@ public class BracketTreeProcessor implements IntProcessor {
             if(secondaryBuilder != null)
                 $work.sate(secondaryBuilder.toString());
         } else if(state == State.FENCE) {
-            appendSecondaryBuilder(primaryBuilder.toString(),false);
+            appendSecondaryBuilder("\"" + primaryBuilder.toString() + "\"",false);
             $work.sate(secondaryBuilder.toString());
         }
         while (!branch.empty()) $work = branch.pop();

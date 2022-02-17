@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.*;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -35,6 +37,10 @@ public class ObjectFactory {
     Subject $classAliases = $();
     Function<String, Subject> elementaryComposer;
 
+    public ObjectFactory() {
+        this(StandardDiscoverer.getAll());
+    }
+
     public ObjectFactory(Series $composers) {
         setComposers($composers);
         $classAliases.alter(Suite.
@@ -46,30 +52,24 @@ public class ObjectFactory {
                 put("string", String.class).
                 put("serial", Serializable.class)
         );
-        elementaryComposer = str -> $();
+        elementaryComposer = this::discoverElementary;
     }
 
     public FactoryVendor load(Subject $root) {
         $references = $();
         $inferredTypes = $();
-        for(var $1 : postDfs$($($root), $ -> $.exclude($$ -> {
-            var o = $$.raw();
-            return "#".equals(o) || "@".equals(o);
-        })).eachIn()) {
-            var $hash = $1.take("#");
-            var $at = $1.take("@");
-            if($at.present()) inferType($1, $at.in().get());
-            if($hash.present()) $references.inset($hash.in().raw(), $1);
-
-            for(var $2 : $1) {
-                var str = $2.asString("");
-                if(str.startsWith("#") && !str.startsWith("##")) {
-                    var $in2 = $2.in().get();
-                    if($in2.present()) {
-                        $1.unset(str);
-                        $references.inset(str.substring(1), $in2);
+        for(var $1 : postDfs$($($root)).eachIn()) {
+            for(var s : $1.each(String.class).select(s -> s.startsWith("@"))) {
+                switch (s) {
+                    case "@id" -> $references.inset($1.in(s).raw(), $1);
+                    case "@class" -> inferType($1, $1.in(s).get());
+                    default -> {
+                        if (s.startsWith("@#")) {
+                            $references.inset(s.substring(2), $1.in(s).get());
+                        }
                     }
                 }
+                $1.unset(s);
             }
         }
         $references.alter($externalReferences);
@@ -107,10 +107,6 @@ public class ObjectFactory {
 
     public Subject get(Subject $, Class<?> expectedType) {
 
-        if (isReference($)) {
-            $ = findReferred($);
-        }
-
         var $v = $compositions.in($).get();
         if($v.present()) {
             if($v.is(expectedType) || $v.raw() == null) return $v;
@@ -125,8 +121,10 @@ public class ObjectFactory {
             if(expectedType.isAssignableFrom(inferredType)) {
                 $v = compose($, inferredType);
             } else {
-                System.err.println("Expected type (" + expectedType +
-                        ") is not assignable from inferred type (" + inferredType + ")");
+                if(inferredType != Serializable.class) {
+                    System.err.println("Expected type (" + expectedType +
+                            ") is not assignable from inferred type (" + inferredType + ")");
+                }
                 $v = compose($, expectedType);
             }
         } else {
@@ -180,7 +178,6 @@ public class ObjectFactory {
         if ($classAliases.present(type)) {
             return $classAliases.in(type).get();
         }
-
         try {
             return $(Class.forName(type));
         } catch (ClassNotFoundException e) {
@@ -280,20 +277,12 @@ public class ObjectFactory {
         }
 
         if(Serializable.class.isAssignableFrom(type)) {
-            try(var ois = new ObjectInputStream(new ByteArrayInputStream(BinaryXray.utf8DecodePrintable($.asString()))) {
-                {
-                    enableResolveObject(true);
+            try {
+                var $r = composeSerial(factoryVendorRoot($));
+                if ($r.present()) {
+                    $compositions.in($).set($r.raw());
+                    return $r;
                 }
-
-                @Override
-                protected Object resolveObject(Object obj) {
-                    if(obj instanceof AutoXray) return new Suite.Auto();
-                    if(obj instanceof StringXray xray) return get(Suite.set(xray.getValue()), Object.class).raw();
-                    if(obj instanceof ObjectXray xray) return get(Suite.set("#" + xray.getRefId()), Object.class).raw();
-                    return obj;
-                }
-            }) {
-                return Suite.set(ois.readObject());
             } catch (IOException | ClassNotFoundException ignored) {
 //                ignored.printStackTrace();
                 System.err.println("Problem with Serializable");
@@ -308,6 +297,8 @@ public class ObjectFactory {
     }
 
     Subject composeArray(Subject $, Class<?> componentType) {
+        if($.size() == 1 && $.in().absent() && $.raw() == null) return $;
+
         Object[] a = (Object[])Array.newInstance(componentType, $.size());
         int i = 0;
         for(var $up : $.eachIn()) {
@@ -317,6 +308,7 @@ public class ObjectFactory {
     }
 
     Subject composeRecord(Subject $, Class<?> recordClass) {
+        if($.size() == 1 && $.in().absent() && $.raw() == null) return $;
 
         try {
             var components = recordClass.getRecordComponents();
@@ -339,6 +331,26 @@ public class ObjectFactory {
         return $();
     }
 
+    Subject composeSerial(Subject $) throws IOException, ClassNotFoundException {
+        if($.size() == 1 && $.in().absent() && $.raw() == null) return $;
+
+        try(var ois = new ObjectInputStream(new ByteArrayInputStream(BinaryXray.utf8DecodePrintable($.asString()))) {
+            {
+                enableResolveObject(true);
+            }
+
+            @Override
+            protected Object resolveObject(Object obj) {
+                if(obj instanceof AutoXray) return new Suite.Auto();
+                if(obj instanceof StringXray xray) return get(Suite.set(xray.getValue()), Object.class).raw();
+                if(obj instanceof ObjectXray xray) return get(Suite.set("#" + xray.getRefId()), Object.class).raw();
+                return obj;
+            }
+        }) {
+            return Suite.set(ois.readObject());
+        }
+    }
+
     static final Subject $primBox = Suite
             .put(boolean.class, Boolean.class)
             .put(byte.class, Byte.class)
@@ -350,15 +362,34 @@ public class ObjectFactory {
             .put(short.class, Short.class)
             .put(void.class, Void.class);
 
+
+    public Subject discoverElementary(String str) {
+        if(str.startsWith("\"")) return $(str.substring(1, str.length() - 1));
+        if("null".equals(str)) return $(null);
+        if(str.startsWith("#")) return get($references.in(str.substring(1)).get(), Object.class);
+        if("+".equals(str) || "true".equals(str)) return $(true);
+        if("-".equals(str) || "false".equals(str)) return $(false);
+        try {
+            // TODO
+            if (str.matches("^[-+]?\\d*\\.\\d*")) return $(Double.parseDouble(str));
+            if (str.matches("^[-+]?\\d*")) return $(Integer.parseInt(str));
+        } catch (Exception ignored) {}
+
+        return $(str);
+    }
+
     FactoryVendorRoot factoryVendorRoot(Subject $sub) {
         for(var $ : $sub) {
             if($.is(String.class)) {
                 String str = $.asExpected();
-                if(str.startsWith("##")) {
-                    $sub.swap(str, get(findReferred($(str.substring(1))), Object.class).asExpected());
-                } else {
-                    var $prim = elementaryComposer.apply(str);
-                    if($prim.present()) $sub.swap(str, $prim.raw());
+                var $prim = elementaryComposer.apply(str);
+                var o = $prim.raw();
+                if(!str.equals(o)) {
+                    if ($sub.present(o)) {
+                        $sub.unset(o);
+                        System.err.println("Duplicate key found: " + o);
+                    }
+                    $sub.swap(str, o);
                 }
             }
         }

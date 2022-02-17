@@ -14,15 +14,27 @@ public class StandardDiscoverer {
 
     public static Subject getAll() {
         return $(
+                Object.class, $(StandardDiscoverer::discoverObject),
                 Boolean.class, $(StandardDiscoverer::discoverBoolean),
+                Number.class, $(StandardDiscoverer::discoverNumber),
+                Short.class, $(StandardDiscoverer::discoverShort),
                 Integer.class, $(StandardDiscoverer::discoverInteger),
-                Double.class, $(StandardDiscoverer::discoverDouble),
+                Long.class, $(StandardDiscoverer::discoverLong),
                 Float.class, $(StandardDiscoverer::discoverFloat),
+                Double.class, $(StandardDiscoverer::discoverDouble),
                 Subject.class, $(StandardDiscoverer::discoverSubject),
                 String.class, $(StandardDiscoverer::discoverString),
-                Object.class, $(StandardDiscoverer::discoverObject), // primitive discoverer
                 ArrayList.class, $(StandardDiscoverer::discoverList)
         );
+    }
+
+    public static Subject discoverObject(Subject $) {
+        if($.absent()) return $();
+        if($.size() == 1 && $.in().absent()) {
+            return Suite.set($.raw());
+        }
+
+        return StandardDiscoverer.discoverSubject($);
     }
 
     public static Subject discoverBoolean(Subject $) {
@@ -35,56 +47,64 @@ public class StandardDiscoverer {
 
     }
 
+    public static Subject discoverShort(Subject $) {
+        var $n = discoverNumber($);
+        if($n.present()) return $($n.asShort());
+        return $();
+    }
+
     public static Subject discoverInteger(Subject $) {
-        if($.is(String.class)) return $(Integer.valueOf($.as(String.class)));
-        if($.is(Number.class)) return $($.as(Number.class).intValue());
+        var $n = discoverNumber($);
+        if($n.present()) return $($n.asInt());
+        return $();
+    }
+
+    public static Subject discoverLong(Subject $) {
+        var $n = discoverNumber($);
+        if($n.present()) return $($n.asLong());
         return $();
     }
 
     public static Subject discoverDouble(Subject $) {
-        if($.is(String.class)) return $(Double.valueOf($.as(String.class)));
-        if($.is(Number.class)) return $($.as(Number.class).doubleValue());
+        var $n = discoverNumber($);
+        if($n.present()) return $($n.asDouble());
         return $();
     }
 
     public static Subject discoverFloat(Subject $) {
-        if($.is(String.class)) return $(Float.valueOf($.as(String.class)));
-        if($.is(Number.class)) return $($.as(Number.class).floatValue());
+        var $n = discoverNumber($);
+        if($n.present()) return $($n.asFloat());
         return $();
+    }
+
+    public static Subject discoverNumber(Subject $) {
+        if($.is(String.class)) {
+            var str = $.asString();
+            if(str.contains(".")) return $(Double.valueOf(str));
+            return $(Long.valueOf(str));
+        }
+        if($.is(Number.class)) return $($.raw());
+        return $(0);
     }
 
     public static Subject discoverString(Subject $) {
         String str = $.as(String.class, "");
-        boolean cutFront = str.startsWith("'"), cutBack = str.endsWith("'");
+        boolean cutFront = str.startsWith("\""), cutBack = str.endsWith("\"");
         return $(cutFront ? cutBack ? str.substring(1, str.length() - 1) : str.substring(1) :
                 cutBack ? str.substring(0, str.length() - 1) : str);
     }
 
-    public static Subject discoverObject(Subject $) {
-        if($.absent()) return $();
-        if($.size() == 1 && $.in().absent() && $.is(String.class)) {
-//            return discoverString($); // skip elementary
-
-            String str = $.as(String.class);
-            boolean cutFront = str.startsWith("'"), cutBack = str.endsWith("'");
-            if(cutFront) {
-                return $(cutBack ? str.substring(1, str.length() - 1) : str.substring(1));
-            } else if(Character.isDigit(str.codePointAt(0))) {
-                return $(Integer.valueOf(str));
-            }
-
-
-        }
-
-        return discoverSubject($);
-    }
 
     public static Subject discoverSubject(Subject $) {
         var $r = $();
         for(var $1 : $) {
-            var o = $1.in().raw();
-            if(o instanceof Subject) $r.inset($1.raw(), (Subject) o);
-            else $r.inset($1.raw(), $(o));
+            if($1.in().present()) {
+                var o = $1.in().raw();
+                if (o instanceof Subject) $r.inset($1.raw(), (Subject) o);
+                else $r.inset($1.raw(), $(o));
+            } else {
+                $r.set($1.raw());
+            }
         }
         return Suite.set($r);
     }

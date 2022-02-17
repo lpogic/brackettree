@@ -1,9 +1,12 @@
 package brackettree;
 
+import brackettree.reader.ObjectFactory;
 import brackettree.writer.TreeDesigner;
 import suite.suite.Subject;
+import suite.suite.action.Statement;
 import suite.suite.util.Cascade;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,13 +69,53 @@ public class Main {
         }
     }
 
+    static int a;
+    static int b;
+
     public static void main(String[] args) {
 
-        record Bar(int a, int b){}
+        record Bar(int a, int b, Bar bar){}
 
-        String tree = BracketTree.encode(new Bar(343, 434));
-        System.out.println(tree);
-        var bar = BracketTree.parse(tree, Bar.class);
-        System.out.println(bar);
+        var bar = new Bar(1,2,null);
+        var bara = new Bar(11,22,bar);
+        var sub = $(bar, $(bar), 3, 4, $(bara));
+        var str = BracketTree.encode(sub);
+        System.out.println(str);
+
+        var obj = BracketTree.parse(str, Subject.class);
+        obj.print();
+
+//        var obj = BracketTree.parse("""
+//                @class[ serial ]
+//                :<>=0005sr0011java.util.CollSerW8>:;;63:1;:811030001I0003tagxp00000001w0400000003sr0011java.lang.Integer12>2:0:4?7818738020001I0005valuexr0010java.lang.Number86:<951=0;94>08;020000xp00000001sq00~000200000002sq00~000200000003x[]
+//                """, Object.class);
+//        System.out.println(obj);
+//        System.out.println(obj.getClass());
+
+//        String tree = BracketTree.encode(new Bar(343, 434));
+//        System.out.println(tree);
+//        var bar = BracketTree.parse(tree, Bar.class);
+//        var of = new ObjectFactory();
+//        of.setClassAlias("Bar", Bar.class);
+//        var bar = BracketTree.parse("[#1] [#1] @#1[ @class[ Bar ] a[ 5 ] b[ 10 ] ]", of, Object.class);
+        /*
+        var config = $(
+                "alias", $(
+                        "Bar", $(Bar.class)
+                )
+        );
+        #config = [
+          .alias[
+            .Bar[ @Bar ]
+          ]
+        ]
+        var config = BracketTree.alias("Bar", Bar.class)
+        var bar = BracketTree.parse("[#1] [#1] @#1[ @class[ Bar ] a[ 5 ] b[ 10 ] ]", BracketTree.alias("Bar", Bar.class), Object.class);
+         */
+//        System.out.println(bar);
+//        System.out.println(bar.getClass());
+//        var sub = (Subject)bar;
+//        sub.print();
+//        System.out.println(sub.at(0).raw() == sub.at(1).raw());
     }
 }

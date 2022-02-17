@@ -23,9 +23,25 @@ import java.util.function.Function;
 
 public class TreeDesigner {
 
-    static final Xray idXray = new SpecialXray("#");
-    static final Xray classXray = new SpecialXray("@");
-    static final Xray reservationsXray = new SpecialXray("#/reservations");
+    static final Xray idXray = new SpecialXray("@id");
+    static final Xray classXray = new SpecialXray("@class");
+    static final Xray reservationsXray = new SpecialXray("@reserved");
+
+    static final Subject $classAliasBox = Suite.
+            put(Short.class, "short").
+            put(short.class, "short").
+            put(Integer.class, "int").
+            put(int.class, "int").
+            put(Long.class, "long").
+            put(long.class, "long").
+            put(Float.class, "float").
+            put(float.class, "float").
+            put(Double.class, "double").
+            put(double.class, "double").
+            put(List.class, "list").
+            put(SolidSubject.class, "subject").
+            put(String.class, "string").
+            put(Serializable.class, "serial");
 
     Subject $refs = $();
     Subject $decompositions = $();
@@ -38,18 +54,7 @@ public class TreeDesigner {
 
     public TreeDesigner() {
         setDecomposers(StandardInterpreter.getAllSupported());
-        $classAliases.alter(Suite.
-                put(Integer.class, "int").
-                put(int.class, "int").
-                put(Double.class, "double").
-                put(double.class, "double").
-                put(Float.class, "float").
-                put(float.class, "float").
-                put(List.class, "list").
-                put(SolidSubject.class, "subject").
-                put(String.class, "string").
-                put(Serializable.class, "serial")
-        );
+        $classAliases.alter($classAliasBox);
         elementaryDecomposer = o -> {
             if(o == null) return $("null");
             if(o instanceof String) return $(o);
@@ -139,12 +144,12 @@ public class TreeDesigner {
                             if (isLeaf) {
                                 $i.unset().put(idXray, new StringXray(x.getRefId())).alter($r);
                             } else {
-                                $i.swap(x, new SpecialXray("##" + x.getRefId()));
-                                $xRoot.inset(new SpecialXray("#" + x.getRefId()), $r);
+                                $i.swap(x, new SpecialXray("#" + x.getRefId()));
+                                $xRoot.inset(new SpecialXray("@#" + x.getRefId()), $r);
                             }
                         } else if(!isLeaf) {
                             if(x.getRefId() == null) x.setRefId("" + id++);
-                            $i.swap(x, new SpecialXray("##" + x.getRefId()));
+                            $i.swap(x, new SpecialXray("#" + x.getRefId()));
                         }
                     }
                 } else if($i1.raw() == reservationsXray) {
