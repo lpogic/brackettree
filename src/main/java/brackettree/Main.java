@@ -1,12 +1,9 @@
 package brackettree;
 
-import brackettree.reader.ObjectFactory;
 import brackettree.writer.TreeDesigner;
 import suite.suite.Subject;
-import suite.suite.action.Statement;
 import suite.suite.util.Cascade;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +55,7 @@ public class Main {
 
         public static Subject compose(Subject $) {
             var repo = new Repo();
-            for(var f : $.list().eachAs(Foo.class)) {
+            for(var f : $.autoIn().eachAs(Foo.class)) {
                 repo.foos.add(f);
             }
             return $(repo);

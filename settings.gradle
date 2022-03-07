@@ -1,4 +1,4 @@
 rootProject.name = 'brackettree'
 
 include ':suite'
-project(':suite').projectDir = new File("C://Users/1/Desktop/PRO/PRO_Java/suite")
+project(':suite').projectDir = new File("C://Users/pomlu/Desktop/pro/java/suite")
